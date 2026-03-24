@@ -535,7 +535,7 @@ function switchPortfolio(id) {
     var newMkey = 'pw_milestones_' + currentUser.id + '_' + id;
     try { assets     = JSON.parse(localStorage.getItem(newKey)  || '[]'); } catch(e){ assets=[]; }
     try { milestones = JSON.parse(localStorage.getItem(newMkey) || '[]'); } catch(e){ milestones=[]; }
-    if (!assets.length && id==='default') seedData(); // seed default if empty
+    if (!assets.length && id==='default') {} // empty portfolio is fine - user adds assets
   }
   closePortfolioModal();
   updatePortfolioSwitcherUI();
@@ -1149,67 +1149,15 @@ function buildSystemPrompt(portfolioCtx) {
 }
 
 function saveApiKey() {
-  var el = document.getElementById("s-apikey");
-  if (!el) return;
-  var key = el.value.trim();
-  if (key) {
-    localStorage.setItem("pw_apikey", key);
-  } else {
-    localStorage.removeItem("pw_apikey");
-  }
+  // API key is handled server-side. No user input needed.
   var status = document.getElementById("apikey-status");
-  if (status) status.textContent = "";
+  if (status) { status.style.color = "var(--green)"; status.textContent = "AI is managed by WealthOS. No key needed."; }
 }
 
 function testApiKey() {
-  var el     = document.getElementById("s-apikey");
+  // API key is handled server-side. No user input needed.
   var status = document.getElementById("apikey-status");
-  if (!el || !status) return;
-  var key = el.value.trim() || localStorage.getItem("pw_apikey") || "";
-  if (!key || !key.startsWith("sk-ant")) {
-    status.style.color = "var(--red)";
-    status.textContent = "Invalid key format -- should start with sk-ant-";
-    return;
-  }
-  status.style.color = "var(--muted)";
-  status.textContent = "Testing...";
-  localStorage.setItem("pw_apikey", key);
-
-  fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type":              "application/json",
-      "x-api-key":                 key,
-      "anthropic-version":         "2023-06-01",
-      "anthropic-dangerous-allow-browser": "true"
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 10,
-      messages: [{ role: "user", content: "hi" }]
-    })
-  })
-  .then(function(r) { return r.json().then(function(d) { return {status:r.status, data:d}; }); })
-  .then(function(res) {
-    if (res.status === 200) {
-      status.style.color = "var(--green)";
-      status.textContent = "API key valid -- AI chat is ready.";
-    } else if (res.status === 401) {
-      status.style.color = "var(--red)";
-      status.textContent = "Invalid key -- check it and try again.";
-    } else {
-      status.style.color = "var(--amber)";
-      status.textContent = "Unexpected response (" + res.status + "). Key may still work.";
-    }
-  })
-  .catch(function(err) {
-    status.style.color = "var(--amber)";
-    var msg = "Could not reach Anthropic API.";
-    if (err && err.message && err.message.indexOf('Failed to fetch') >= 0) {
-      msg = "Network error -- check your internet connection.";
-    }
-    status.textContent = msg + " If this persists, get a new key at console.anthropic.com";
-  });
+  if (status) { status.style.color = "var(--green)"; status.textContent = "AI chat is ready. Powered by Claude."; }
 }
 
 function sendChat(overrideText) {
@@ -1485,7 +1433,7 @@ function doSignup() {
   var email = (document.getElementById('signup-email') || {}).value || '';
   var pw    = (document.getElementById('signup-pw')    || {}).value || '';
   var pw2   = (document.getElementById('signup-pw2')   || {}).value || '';
-  var plan  = (document.getElementById('signup-plan')  || {}).value || 'free';
+  var plan  = 'free'; // All new users start on free plan (upgrade via payment)
   var terms = (document.getElementById('signup-terms') || {}).checked || false;
   var err   = document.getElementById('signup-error');
   fname = fname.trim(); lname = lname.trim();
@@ -1598,18 +1546,31 @@ function doForgot() {
 }
 
 function doSocialAuth(provider) {
-  var u = {
-    id: provider + '_' + Date.now(),
-    firstName: provider === 'google' ? 'Google' : 'GitHub',
-    lastName: 'User',
-    email: provider + '_' + Date.now() + '@' + provider + '.com',
-    password: '', plan: 'pro', provider: provider,
-    createdAt: new Date().toISOString()
-  };
-  users.push(u);
-  saveUsers();
-  saveSession(u);
-  enterDashboard();
+  var _sb = getSB();
+  if (!_sb) {
+    // Supabase not loaded - show error
+    var err = document.getElementById('login-error') || document.getElementById('signup-error');
+    if (err) { err.textContent = 'Authentication service is loading. Please try again.'; err.style.display = 'block'; }
+    return;
+  }
+  // Use Supabase OAuth
+  var redirectUrl = window.location.origin + window.location.pathname;
+  _sb.auth.signInWithOAuth({
+    provider: provider,
+    options: { redirectTo: redirectUrl }
+  }).then(function(res) {
+    if (res.error) {
+      console.error('[WealthOS] OAuth error:', res.error);
+      var err = document.getElementById('login-error') || document.getElementById('signup-error');
+      if (err) { err.textContent = 'Google sign-in failed. Please try again.'; err.style.display = 'block'; }
+    }
+    // On success, Supabase redirects to Google, then back to redirectUrl
+    // init() handles the callback on page load
+  }).catch(function(e) {
+    console.error('[WealthOS] OAuth error:', e);
+    var err = document.getElementById('login-error') || document.getElementById('signup-error');
+    if (err) { err.textContent = 'Could not connect to Google. Check your connection.'; err.style.display = 'block'; }
+  });
 }
 
 function doLogout() {
@@ -2066,29 +2027,8 @@ function saveData() {
 }
 
 function seedData() {
-  assets = [
-    {id:1, name:'Apple Inc',          cat:'stock',      ticker:'AAPL',  cost:180000, val:247000, date:'2022-01-15', qty:1000, loc:'Schwab',          notes:'Long-term hold'},
-    {id:2, name:'S&P 500 ETF',        cat:'stock',      ticker:'SPY',   cost:320000, val:398000, date:'2021-06-01', qty:800,  loc:'Fidelity',         notes:'Core index position'},
-    {id:3, name:'Nvidia Corp',        cat:'stock',      ticker:'NVDA',  cost:85000,  val:193000, date:'2023-03-01', qty:500,  loc:'Schwab',           notes:'AI play'},
-    {id:4, name:'Manhattan Apartment',cat:'real_estate',ticker:'--',     cost:2100000,val:2850000,date:'2020-03-20', qty:1,    loc:'New York, NY',     notes:'Primary residence'},
-    {id:5, name:'Miami Condo',        cat:'real_estate',ticker:'--',     cost:890000, val:1240000,date:'2021-11-05', qty:1,    loc:'Miami, FL',        notes:'Rental $4,800/mo'},
-    {id:6, name:'Bitcoin',            cat:'crypto',     ticker:'BTC',   cost:220000, val:341000, date:'2022-09-10', qty:5,    loc:'Coinbase',         notes:'Cold storage backup'},
-    {id:7, name:'Ethereum',           cat:'crypto',     ticker:'ETH',   cost:95000,  val:87000,  date:'2023-01-20', qty:25,   loc:'Ledger',           notes:'Staking rewards'},
-    {id:8, name:'Basquiat Lithograph',cat:'art',        ticker:'--',     cost:180000, val:310000, date:'2019-05-15', qty:1,    loc:'NYC Storage',      notes:'Certificate of authenticity'},
-    {id:9, name:'Patek Philippe Nautilus',cat:'watch',  ticker:'--',     cost:95000,  val:142000, date:'2021-08-22', qty:1,    loc:'Safe deposit box', notes:'5711/1A-010'},
-    {id:10,name:'Rolex Daytona',      cat:'watch',      ticker:'--',     cost:42000,  val:58000,  date:'2022-07-10', qty:1,    loc:'Home safe',        notes:'116500LN white dial'},
-    {id:11,name:'Goldman HYSA',       cat:'cash',       ticker:'--',     cost:500000, val:524000, date:'2024-01-01', qty:1,    loc:'Goldman Sachs',    notes:'5.2% APY'},
-    {id:12,name:'Treasury Bills',     cat:'cash',       ticker:'T-BILL',cost:250000, val:253200, date:'2024-12-01', qty:1,    loc:'TreasuryDirect',   notes:'5.28% yield'},
-  ];
-  milestones = [
-    {id:1,title:'First $1M net worth',          date:'2020-08-15',val:1000000, type:'gold'},
-    {id:2,title:'Bought Manhattan apartment',   date:'2020-03-20',val:850000,  type:'blue'},
-    {id:3,title:'Startup acquisition closed',   date:'2022-04-01',val:3200000, type:'gold'},
-    {id:4,title:'Crypto portfolio peak',        date:'2021-11-10',val:5800000, type:'green'},
-    {id:5,title:'Market correction Q1 2022',    date:'2022-02-01',val:3900000, type:'red'},
-    {id:6,title:'Miami condo purchase',         date:'2021-11-05',val:4200000, type:'blue'},
-  ];
-  saveData();
+  // REMOVED: No demo/sample data. Users add their own assets.
+  console.log('[WealthOS] seedData disabled - production mode');
 }
 
 // ==============================================
@@ -2358,7 +2298,7 @@ function renderAll() {
     var sName = safeGet('s-name');
     if (sName) sName.value = settings.name || '';
     var sKey = safeGet('s-apikey');
-    if (sKey) { try { var storedKey = localStorage.getItem('pw_apikey'); if(storedKey) sKey.value = storedKey; } catch(e){} }
+    if (sKey) { sKey.value = ''; sKey.placeholder = 'Managed by WealthOS'; sKey.disabled = true; }
 
     var sGoal = safeGet('s-goal');
     if (sGoal) sGoal.value = settings.goal || 10000000;
@@ -2370,7 +2310,13 @@ function renderAll() {
     if (sCur) sCur.value = settings.currency || 'USD';
 
     var ovDate = safeGet('overview-date');
-    if (ovDate) ovDate.textContent = new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    if (ovDate) {
+      var hour = new Date().getHours();
+      var greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+      var fname = (currentUser && currentUser.firstName) ? currentUser.firstName : '';
+      var dateStr = new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+      ovDate.textContent = (fname ? greeting + ', ' + fname + ' -- ' : '') + dateStr;
+    }
 
     var rpDate = safeGet('report-date');
     if (rpDate) rpDate.textContent = new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
@@ -3707,6 +3653,18 @@ function saveAsset() {
   var name = (safeGet('a-name') || {value:''}).value.trim();
   if (!name) { alert('Asset name is required.'); return; }
 
+  var isEdit = !!editId;
+
+  // Free plan limit enforcement (also in openAddAsset, but double-check here)
+  if (!isEdit) {
+    var plan = settings.plan || (currentUser ? currentUser.plan : 'free') || 'free';
+    if (plan === 'free' && assets.length >= 5) {
+      closeModal('add-modal');
+      showUpgradePrompt('Asset Limit Reached', 'Free plan supports up to 5 assets. Upgrade to Pro for unlimited assets.');
+      return;
+    }
+  }
+
   var assetCurrency = (safeGet('a-currency')||{value:'USD'}).value || 'USD';
   var assetRate  = CURRENCY_RATES[assetCurrency] || 1;
   if (assetRate <= 0) assetRate = 1;
@@ -3725,7 +3683,6 @@ function saveAsset() {
   if (!ticker && (type === 'real_estate' || type === 'art' || type === 'watch' || type === 'cash')) ticker = '--';
   if (!ticker) ticker = '--';
 
-  var isEdit = !!editId;
   var a = {
     id:       editId || Date.now(),
     name:     name,
@@ -3768,10 +3725,19 @@ function saveAsset() {
     _showToast(a.name + ' updated successfully', 'success');
   } else {
     _showToast(a.name + ' added to portfolio', 'success');
-    // If this was first asset, refresh overview to clear empty state
     if (assets.length === 1) {
       setTimeout(function() { try { nav('overview'); } catch(e) {} }, 200);
     }
+  }
+
+  // -- Auto price sync: fetch live price for this asset's ticker --
+  if (a.ticker && a.ticker !== '--' && (a.cat === 'stock' || a.cat === 'crypto')) {
+    setTimeout(function() {
+      try {
+        console.log('[WealthOS] Auto-syncing price for', a.ticker);
+        syncPrices(true, false);
+      } catch(e) { console.warn('[WealthOS] Auto-sync failed:', e); }
+    }, 500);
   }
 
   // -- 2. Sync to Supabase in background --
@@ -4631,8 +4597,8 @@ function checkShareParam() {
                 if (!existingUser) {
                   existingUser = {
                     id: 'u_' + Date.now(),
-                    firstName: (sbUser.user_metadata && sbUser.user_metadata.first_name) || sbUser.email.split('@')[0],
-                    lastName:  (sbUser.user_metadata && sbUser.user_metadata.last_name)  || '',
+                    firstName: (sbUser.user_metadata && (sbUser.user_metadata.first_name || (sbUser.user_metadata.full_name || sbUser.user_metadata.name || '').split(' ')[0])) || sbUser.email.split('@')[0],
+                    lastName:  (sbUser.user_metadata && (sbUser.user_metadata.last_name || (sbUser.user_metadata.full_name || sbUser.user_metadata.name || '').split(' ').slice(1).join(' '))) || '',
                     email: sbUser.email, plan: 'free', supabaseId: sbUser.id,
                     createdAt: new Date().toISOString()
                   };
@@ -4660,8 +4626,8 @@ function checkShareParam() {
                 var recLU = users.find(function(ux) { return ux.email === recU.email || ux.supabaseId === recU.id; });
                 if (!recLU) {
                   recLU = { id: 'u_' + Date.now(),
-                    firstName: (recU.user_metadata && recU.user_metadata.first_name) || recU.email.split('@')[0],
-                    lastName:  (recU.user_metadata && recU.user_metadata.last_name)  || '',
+                    firstName: (recU.user_metadata && (recU.user_metadata.first_name || (recU.user_metadata.full_name || recU.user_metadata.name || '').split(' ')[0])) || recU.email.split('@')[0],
+                    lastName:  (recU.user_metadata && (recU.user_metadata.last_name || (recU.user_metadata.full_name || recU.user_metadata.name || '').split(' ').slice(1).join(' '))) || '',
                     email: recU.email, plan: 'free', supabaseId: recU.id, createdAt: new Date().toISOString() };
                   users.push(recLU); saveUsers();
                 }
@@ -4687,7 +4653,7 @@ function checkShareParam() {
     }
   } catch(e) {}
 
-  try{ if(!localStorage.getItem('pw_apikey')&&DEFAULT_ANTHROPIC_KEY){ localStorage.setItem('pw_apikey',DEFAULT_ANTHROPIC_KEY); } }catch(e){}
+  // API key is handled server-side - no client-side key needed
   try { updateBadgeCount(); } catch(e) {}
   try { setBilling('monthly'); } catch(e) {}
   try { initKeyboardShortcuts(); } catch(e) {}
@@ -4714,8 +4680,8 @@ function checkShareParam() {
           // User exists in Supabase but not local storage (new device)
           localUser = {
             id: 'u_' + Date.now(),
-            firstName: (sbUser.user_metadata && sbUser.user_metadata.first_name) || sbUser.email.split('@')[0],
-            lastName:  (sbUser.user_metadata && sbUser.user_metadata.last_name)  || '',
+            firstName: (sbUser.user_metadata && (sbUser.user_metadata.first_name || (sbUser.user_metadata.full_name || sbUser.user_metadata.name || '').split(' ')[0])) || sbUser.email.split('@')[0],
+            lastName:  (sbUser.user_metadata && (sbUser.user_metadata.last_name || (sbUser.user_metadata.full_name || sbUser.user_metadata.name || '').split(' ').slice(1).join(' '))) || '',
             email: sbUser.email,
             plan: 'free',
             supabaseId: sbUser.id,
@@ -4887,7 +4853,7 @@ function generateWealthReport() {
     '<h2>Top Holdings</h2>' +
     '<table><thead><tr><th>Asset</th><th>Ticker</th><th>Value</th><th>Allocation</th><th>P&amp;L</th></tr></thead><tbody>' + holdingRows + '</tbody></table>' +
     '<div class="footer"><span>Generated by WealthOS * Private &amp; Confidential</span><span>wealthos.app</span></div>' +
-    '<button class="print-btn no-print" onclick="window.print()"> Save as PDF</button>' +
+    '<button class="print-btn no-print" onclick="window.print()">Download PDF</button>' +
     '</body></html>';
 
   var win = window.open('', '_blank');
