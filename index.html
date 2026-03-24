@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="WealthOS — Track stocks, real estate, crypto, art, watches and cash in one private AI-powered wealth dashboard. Know your exact net worth in minutes.">
+<meta name="keywords" content="wealth dashboard, net worth tracker, portfolio analytics, private finance, investment tracker, family office software">
+<meta property="og:title" content="WealthOS — Your Personal Wealth Dashboard">
+<meta property="og:description" content="Track every asset you own in one private, intelligent dashboard. AI-powered insights. 100% private — zero servers.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="WealthOS — Your Personal Wealth Dashboard">
+<meta name="twitter:description" content="Track stocks, property, crypto, art and cash in one private AI-powered dashboard. Free to start.">
+<meta name="theme-color" content="#0D0D12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WealthOS">
+<link rel="manifest" id="pwa-manifest">
+<meta name="application-name" content="WealthOS">
+<title>WealthOS — Your Personal Wealth Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%235C5FEF'/><text x='16' y='22' font-family='system-ui,sans-serif' font-size='16' font-weight='700' text-anchor='middle' fill='white'>W</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0F;
+  --surface:#141419;
+  --surface2:#1A1A24;
+  --navy:#141419;--navy2:#1A1A24;--navy3:#22222E;
+  --border:#242430;--border2:#2E2E3E;
+  --text:#F2F2FA;--muted:#8A8FAF;--muted2:#636382;
+  --blue:#5C5FEF;--green:#22D3A5;--red:#F05C71;--amber:#E8A030;--gold:#C8A06A;--gold2:#E0C080;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);font-family:var(--sans);color:var(--text);overflow-x:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted2)}
+.page{display:none}.page.active{display:block}
+#app{display:none}#auth{display:none}
+#app.active{display:flex;flex-direction:column;min-height:100vh}
+#auth.active{display:flex;justify-content:center;align-items:center;min-height:100vh}
+.bg-grid{display:none}.bg-glow{display:none}
+
+/* ════════════════════════════════
+   LANDING PAGE
+════════════════════════════════ */
+.lnav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.96);backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px);border-bottom:1px solid rgba(255,255,255,0.09);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 40px}
+.lnav-logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.lnav-logomark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#5C5FEF,#22D3A5);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:600;color:#fff;box-shadow:0 2px 8px rgba(92,95,239,0.35)}
+.lnav-name{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text);letter-spacing:0.5px}
+.lnav-name span{color:var(--blue)}
+.lnav-links{display:flex;align-items:center;gap:32px}
+.lnav-links a{font-size:13.5px;color:var(--muted);text-decoration:none;cursor:pointer;transition:color 0.18s;letter-spacing:-0.1px}
+.lnav-links a:hover{color:var(--text)}
+.lnav-right{display:flex;align-items:center;gap:12px}
+.lnav-signin{font-size:14px;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--sans);transition:color 0.15s}
+.lnav-signin:hover{color:var(--text)}
+.lnav-cta{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.2s;letter-spacing:-0.1px}
+.lnav-cta:hover{background:#4a4def;transform:translateY(-1px);box-shadow:0 6px 20px rgba(92,95,239,0.35)}
+
+/* HERO */
+.hero{padding:100px 40px 80px;max-width:1060px;margin:0 auto;text-align:center;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;background:#141419;border:1px solid #282836;margin-bottom:32px;border-radius:20px;padding:6px 18px;font-size:12px;font-family:var(--mono);color:var(--muted);margin-bottom:28px}
+.hero-badge .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 2s infinite}
+.hero-badge .badge-waitlist{color:var(--blue);font-weight:600;cursor:pointer;margin-left:4px;transition:opacity 0.15s}
+.hero-badge .badge-waitlist:hover{opacity:0.8;text-decoration:underline}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.hero h1{font-size:clamp(36px,5.5vw,62px);font-weight:700;line-height:1.08;letter-spacing:-2px;color:var(--text);margin-bottom:22px}
+.hero h1 .grad{background:linear-gradient(135deg,#5C5FEF,#22D3A5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:560px;margin:0 auto 16px;font-weight:400}
+.hero-tagline{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:36px}
+.hero-principle{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);font-family:var(--mono);font-size:10px;font-weight:500;color:var(--muted);letter-spacing:0.06em;transition:border-color 0.2s}
+.hero-principle:hover{border-color:rgba(255,255,255,0.14);color:var(--text)}
+.hero-principle svg{opacity:0.6;flex-shrink:0}
+.hero-btns{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:64px;flex-wrap:wrap}
+.btn-primary-lg{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:14px 30px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.2s;letter-spacing:-0.1px;box-shadow:0 1px 0 rgba(255,255,255,0.15) inset,0 4px 16px rgba(92,95,239,0.3)}
+.btn-primary-lg:hover{background:#4a4def;transform:translateY(-2px);box-shadow:0 10px 32px rgba(92,95,239,0.5)}
+.btn-ghost-lg{background:rgba(255,255,255,0.03);color:var(--muted);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:13px 28px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all 0.2s;backdrop-filter:blur(4px)}
+.btn-ghost-lg:hover{border-color:rgba(92,95,239,0.5);color:var(--text);background:rgba(92,95,239,0.05)}
+.btn-secondary-cta{padding:13px 24px;font-size:13px;opacity:0.85}
+.btn-secondary-cta:hover{opacity:1}
+.btn-text-cta{background:none;border:none;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans);padding:13px 8px;transition:color 0.18s;letter-spacing:-0.1px}
+.btn-text-cta:hover{color:var(--text)}
+
+/* WAITLIST MODAL */
+.waitlist-modal{position:fixed;inset:0;background:rgba(13,13,18,0.85);backdrop-filter:blur(16px);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.waitlist-modal.show{display:flex;animation:fadeIn 0.2s ease}
+.waitlist-box{background:var(--surface);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:36px;width:100%;max-width:420px;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.6)}
+.waitlist-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
+.waitlist-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.waitlist-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.waitlist-field label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:2px;text-transform:uppercase}
+.waitlist-field input{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans);transition:border-color 0.2s;width:100%}
+.waitlist-field input:focus{border-color:var(--blue)}
+.waitlist-field input::placeholder{color:var(--muted2)}
+.waitlist-submit{width:100%;background:var(--blue);border:none;border-radius:6px;padding:12px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);margin-top:4px;transition:all 0.15s}
+.waitlist-submit:hover{background:#3d7dee}
+.waitlist-success{background:rgba(34,211,165,0.08);border:1px solid rgba(34,211,165,0.2);border-radius:8px;padding:14px 16px;font-size:13px;color:var(--green);display:none;text-align:center;line-height:1.6}
+.waitlist-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all 0.15s}
+.waitlist-close:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+.waitlist-count{font-family:var(--mono);font-size:11px;color:var(--muted2);text-align:center;margin-top:12px}
+
+/* HOW IT WORKS */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:rgba(255,255,255,0.05);border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.09)}
+.how-step{background:var(--surface);padding:32px 28px;transition:background 0.2s}
+.how-num{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px}
+.how-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px}
+.how-desc{font-size:13px;color:var(--muted);line-height:1.65}
+
+/* ASSET TYPES GRID */
+.asset-types-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.at-card{background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:22px 16px;text-align:center;transition:all 0.2s}
+.at-card:hover{border-color:rgba(92,95,239,0.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.at-icon{font-size:22px;margin-bottom:10px}
+.at-label{font-size:12px;font-weight:500;color:var(--muted);letter-spacing:-0.1px}
+
+/* NO TESTIMONIALS — replace section */
+.built-for-section{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:48px;text-align:center}
+.built-for-text{font-size:18px;color:var(--muted);line-height:1.75;max-width:600px;margin:0 auto}
+.built-for-text strong{color:var(--text);font-weight:600}
+
+/* HERO PREVIEW */
+.hero-preview{background:var(--navy2);border:1px solid var(--border2);border-radius:16px;overflow:hidden;max-width:900px;margin:0 auto;box-shadow:0 40px 80px rgba(0,0,0,0.5)}
+.preview-bar{background:var(--navy);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px}
+.preview-dots{display:flex;gap:6px}
+.preview-dot{width:10px;height:10px;border-radius:50%}
+.preview-title{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:8px;letter-spacing:0.5px}
+.preview-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--border)}
+.preview-card{padding:20px;border-right:1px solid var(--border)}
+.preview-card:last-child{border-right:none}
+.pc-label{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.pc-val{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text);margin-bottom:4px}
+.pc-val.blue{color:var(--blue)}.pc-val.green{color:var(--green)}.pc-val.gold{color:var(--gold2)}.pc-val.amber{color:var(--amber)}
+.pc-sub{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.pc-sub.up{color:var(--green)}.pc-sub.dn{color:var(--red)}
+.preview-bottom{padding:14px 20px;display:flex;gap:8px;align-items:center}
+.preview-alloc{display:flex;gap:4px;flex:1}
+.preview-alloc-item{height:6px;border-radius:3px}
+.preview-caption{font-family:var(--mono);font-size:10px;color:var(--muted);margin-left:auto}
+
+/* TRUSTED */
+.trusted-section{padding:40px 48px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;z-index:1;overflow:hidden}
+.trusted-label{text-align:center;font-family:var(--mono);font-size:10px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.trusted-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.trusted-chip{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:6px 16px;font-size:12px;color:var(--muted);letter-spacing:-0.1px}
+
+/* FEATURES */
+.section{padding:80px 48px;max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.section-label{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--blue);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
+.section-title{font-size:clamp(28px,3.5vw,42px);font-weight:700;color:var(--text);line-height:1.08;letter-spacing:-1.8px;margin-bottom:14px}
+.section-sub{font-size:16px;color:var(--muted);line-height:1.7;max-width:560px;margin-bottom:48px}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.feat-card{background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:28px;transition:all 0.25s}
+.feat-card:hover{border-color:rgba(92,95,239,0.25);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+.feat-icon{font-size:24px;margin-bottom:14px}
+.feat-title{font-size:14.5px;font-weight:600;color:var(--text);margin-bottom:8px;letter-spacing:-0.2px}
+.feat-desc{font-size:13px;color:var(--muted);line-height:1.65}
+
+/* METRICS SHOWCASE */
+.metrics-showcase{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px}
+.ms-card{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center}
+.ms-val{font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);margin-bottom:4px}
+.ms-val.blue{color:var(--blue)}.ms-val.green{color:var(--green)}.ms-val.gold{color:var(--gold2)}
+.ms-label{font-size:12px;color:var(--muted)}
+
+/* PRICING */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.price-card{background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:32px;position:relative;transition:all 0.25s}
+.price-card.popular{border-color:rgba(92,95,239,0.5);background:var(--surface);box-shadow:0 0 0 1px rgba(92,95,239,0.2),0 24px 48px rgba(0,0,0,0.4)}
+.price-card.popular::before{content:'MOST POPULAR';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:2px;padding:4px 12px;border-radius:0 0 6px 6px}
+.price-plan{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px}
+.price-amount{font-family:var(--mono);font-size:36px;font-weight:600;color:var(--text);margin-bottom:6px}
+.price-amount span{font-size:14px;color:var(--muted);font-weight:400}
+.price-desc{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+.price-features li{font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px}
+.price-features li::before{content:'✓';color:var(--green);font-weight:600;flex-shrink:0;font-size:11px}
+.price-btn{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:11px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;font-family:var(--sans);transition:all 0.2s;letter-spacing:-0.1px}
+.price-btn:hover{background:rgba(92,95,239,0.08);border-color:rgba(92,95,239,0.4);color:var(--blue)}
+.price-card.popular .price-btn{background:var(--blue);border-color:transparent;color:#fff;box-shadow:0 4px 14px rgba(92,95,239,0.4)}
+.price-card.popular .price-btn:hover{background:#4a4def;box-shadow:0 6px 20px rgba(92,95,239,0.5)}
+
+/* TESTIMONIALS */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.testi-card{background:var(--navy2);border:1px solid var(--border);border-radius:12px;padding:24px}
+.testi-stars{color:var(--amber);font-size:13px;margin-bottom:12px;letter-spacing:2px}
+.testi-quote{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:18px;font-style:italic;opacity:0.9}
+.testi-author{display:flex;align-items:center;gap:12px}
+.testi-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.testi-name{font-size:13px;font-weight:600;color:var(--text)}
+.testi-role{font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+/* FAQ */
+.faq-list{display:flex;flex-direction:column;gap:8px;max-width:720px}
+.faq-item{background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:12px;overflow:hidden;cursor:pointer;transition:all 0.18s}
+.faq-item:hover{border-color:rgba(92,95,239,0.2);background:rgba(92,95,239,0.02)}
+.faq-item.open{border-color:rgba(92,95,239,0.25)}
+.faq-q{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:500;color:var(--text)}
+.faq-arrow{font-size:12px;color:var(--muted);transition:transform 0.2s}
+.faq-item.open .faq-arrow{transform:rotate(180deg);color:var(--blue)}
+.faq-a{display:none;padding:0 20px 16px;font-size:13px;color:var(--muted);line-height:1.7}
+.faq-item.open .faq-a{display:block}
+
+/* FINAL CTA */
+.final-cta{background:linear-gradient(135deg,#1A1A22,#22222E);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 48px;text-align:center;position:relative;z-index:1}
+.final-cta h2{font-size:clamp(28px,4vw,44px);font-weight:700;color:var(--text);margin-bottom:16px;letter-spacing:-1px}
+.final-cta p{font-size:16px;color:var(--muted);margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto}
+
+/* FOOTER */
+.footer{background:var(--bg);border-top:1px solid rgba(255,255,255,0.05);padding:36px 40px;position:relative;z-index:1}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.footer-logo{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:13px;color:var(--muted);cursor:pointer;transition:color 0.15s}
+.footer-links a:hover{color:var(--text)}
+.footer-copy{font-size:11px;color:var(--muted2);font-family:var(--mono);text-align:right}
+
+/* ════════════════════════════════
+   AUTH PAGE
+════════════════════════════════ */
+#auth.active{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px;position:relative;z-index:1}
+.auth-wrap{width:100%;max-width:440px}
+.auth-logo{text-align:center;margin-bottom:32px}
+.auth-logomark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#5C5FEF,#22D3A5);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:16px;font-weight:600;color:#fff;margin:0 auto 10px}
+.auth-logo-name{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text)}
+.auth-logo-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.auth-card{background:var(--surface);border:1px solid rgba(255,255,255,0.1);border-radius:18px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.5)}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border)}
+.auth-tab{flex:1;padding:14px;text-align:center;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;background:none;border:none;font-family:var(--sans);transition:all 0.15s;border-bottom:2px solid transparent}
+.auth-tab.active{color:var(--blue);background:rgba(92,95,239,0.05);border-bottom-color:var(--blue)}
+.auth-body{padding:28px}
+.auth-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.auth-fields{display:flex;flex-direction:column;gap:14px;margin-bottom:8px}
+.auth-field{display:flex;flex-direction:column;gap:6px}
+.auth-field label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:2px;text-transform:uppercase}
+.auth-field input,.auth-field select{background:var(--bg);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans);transition:border-color 0.2s,box-shadow 0.2s;width:100%}
+.auth-field input:focus,.auth-field select:focus{border-color:rgba(92,95,239,0.5);box-shadow:0 0 0 3px rgba(92,95,239,0.08)}
+.auth-field input::placeholder{color:var(--muted2)}
+.auth-field select option{background:var(--navy2)}
+.auth-row{display:flex;align-items:center;justify-content:space-between;margin:6px 0 20px}
+.auth-remember{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer}
+.auth-remember input{accent-color:var(--blue);width:13px;height:13px}
+.auth-forgot{background:none;border:none;font-size:12px;color:var(--blue);cursor:pointer;font-family:var(--sans);transition:opacity 0.15s}
+.auth-forgot:hover{opacity:0.7}
+.auth-submit{width:100%;background:var(--blue);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.15s;margin-bottom:18px}
+.auth-submit:hover{background:#4a4def;transform:translateY(-1px);box-shadow:0 8px 24px rgba(92,95,239,0.3)}
+.auth-divider{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-divider span{font-size:11px;color:var(--muted);white-space:nowrap;font-family:var(--mono)}
+.auth-social{display:flex;flex-direction:column;gap:9px}
+.auth-social-btn{width:100%;background:var(--navy);border:1px solid var(--border);border-radius:8px;padding:11px;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;font-family:var(--sans);display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.15s}
+.auth-social-btn:hover{border-color:var(--border2)}
+.auth-switch{text-align:center;font-size:13px;color:var(--muted);margin-top:18px}
+.auth-switch a{color:var(--blue);cursor:pointer;font-weight:500}
+.auth-error{background:rgba(240,92,113,0.1);border:1px solid rgba(240,92,113,0.3);border-radius:6px;padding:9px 12px;font-size:12px;color:var(--red);margin-bottom:14px;display:none;font-family:var(--mono)}
+.auth-success{background:rgba(34,211,165,0.1);border:1px solid rgba(34,211,165,0.3);border-radius:6px;padding:9px 12px;font-size:12px;color:var(--green);margin-bottom:14px;display:none;font-family:var(--mono)}
+.auth-strength{padding:9px 14px;font-size:11px;font-weight:600;color:var(--muted);font-family:var(--mono);letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08);text-align:left}
+.auth-strength-fill{height:100%;border-radius:2px;transition:width 0.3s,background 0.3s;width:0}
+.auth-strength-label{font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.pw-wrap{position:relative}
+.pw-wrap input{padding-right:42px}
+.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;width:24px;height:24px;transition:color 0.15s}.pw-eye:hover{color:var(--text)}.pw-eye svg{display:block}
+.auth-back-btn{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:var(--sans);margin-bottom:20px;display:flex;align-items:center;gap:6px;transition:color 0.15s}
+.auth-back-btn:hover{color:var(--text)}
+
+/* ════════════════════════════════
+   APP
+════════════════════════════════ */
+.app-topbar{background:rgba(10,10,15,0.97);border-bottom:1px solid rgba(255,255,255,0.09);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;position:sticky;top:0;z-index:100;backdrop-filter:saturate(180%) blur(24px);-webkit-backdrop-filter:saturate(180%) blur(24px)}
+.app-brand{display:flex;align-items:center;gap:9px;cursor:pointer}
+.app-brand-mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#5C5FEF,#22D3A5);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;box-shadow:0 2px 6px rgba(92,95,239,0.3)}
+.app-brand-name{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text)}
+.app-ticker{display:flex;gap:18px;font-family:var(--mono);font-size:11px;flex:1;margin:0 20px;overflow:hidden}
+.tick-item{display:flex;align-items:center;gap:5px;white-space:nowrap;color:var(--muted)}
+.tick-sym{color:var(--text);font-weight:500}.tick-up{color:var(--green)}.tick-dn{color:var(--red)}
+.app-user-area{display:flex;align-items:center;gap:10px}
+.app-live-badge{background:rgba(34,211,165,0.12);border:1px solid rgba(34,211,165,0.28);border-radius:4px;padding:3px 9px;font-size:9px;font-weight:600;color:var(--green);letter-spacing:1.5px;text-transform:uppercase;font-family:var(--mono)}
+.app-time{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.app-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#5C5FEF,#22D3A5);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;letter-spacing:0.02em}
+.app-username{font-size:12px;color:var(--text);font-weight:500}
+.app-logout-btn{background:rgba(240,92,113,0.06);border:1px solid rgba(240,92,113,0.12);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:500;color:var(--red);cursor:pointer;font-family:var(--sans);transition:all 0.18s;letter-spacing:-0.1px}
+.app-logout-btn:hover{background:rgba(240,92,113,0.12);border-color:rgba(240,92,113,0.25)}
+
+.app-body{display:flex;flex:1}
+
+/* SIDEBAR */
+.sidebar{width:200px;background:var(--bg);border-right:1px solid rgba(255,255,255,0.08);padding:12px 0;display:flex;flex-direction:column;gap:1px;flex-shrink:0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+.sb-section{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;padding:16px 16px 6px;font-family:var(--mono)}
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 12px;margin:0 6px;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.18s;border-radius:8px;border-left:none;letter-spacing:-0.1px}
+.sb-item:hover{background:rgba(255,255,255,0.05);color:var(--text)}
+.sb-item.active{background:rgba(92,95,239,0.1);color:var(--blue)}
+.sb-icon{display:flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;opacity:0.6}.sb-icon svg{width:15px;height:15px;stroke-width:1.6}.sb-item:hover .sb-icon,.sb-item.active .sb-icon{opacity:1}
+.sb-badge{margin-left:auto;background:rgba(92,95,239,0.18);color:var(--blue);font-size:9px;font-weight:600;padding:2px 6px;border-radius:20px;font-family:var(--mono)}
+.sb-div{height:1px;background:rgba(255,255,255,0.05);margin:8px 16px}
+
+/* MAIN AREA */
+.main{flex:1;padding:20px 24px;overflow-y:auto;min-width:0}
+.view{display:none;animation:fadeIn 0.22s cubic-bezier(0.16,1,0.3,1)}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalIn{from{opacity:0;transform:scale(0.97) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* PAGE HEADER */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
+.ph-left h2{font-size:19px;font-weight:600;letter-spacing:-0.5px;color:var(--text)}
+.ph-left p{font-size:12px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.ph-right{display:flex;gap:10px;flex-shrink:0}
+.btn{border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.18s;letter-spacing:-0.1px}
+.btn-p{background:var(--blue);border:none;color:#fff;box-shadow:0 1px 0 rgba(255,255,255,0.08) inset}
+.btn-p:hover{background:#4a4def;transform:translateY(-1px);box-shadow:0 4px 12px rgba(92,95,239,0.4)}
+.btn-g{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);color:var(--muted)}
+.btn-g:hover{border-color:rgba(92,95,239,0.35);color:var(--blue);background:rgba(92,95,239,0.05)}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px;margin-bottom:18px}
+.mc{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px;position:relative;overflow:hidden;transition:all 0.22s}
+.mc::after{display:none}
+.mc:hover{border-color:rgba(255,255,255,0.1);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.mc-label{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;font-family:var(--mono)}
+.mc-val{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--text);line-height:1;letter-spacing:-0.5px}
+.mc-val.green{color:var(--green)}.mc-val.red{color:var(--red)}.mc-val.gold{color:var(--gold2)}.mc-val.blue{color:var(--blue)}
+.mc-sub{font-family:var(--mono);font-size:10px;margin-top:5px}
+.mc-up{color:var(--green)}.mc-dn{color:var(--red)}.mc-n{color:var(--muted)}
+.mc-bar{height:3px;background:rgba(255,255,255,0.05);border-radius:2px;margin-top:9px;overflow:hidden}
+.mc-fill{height:100%;border-radius:2px;transition:width 1s ease}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:14px;overflow:hidden;margin-bottom:14px;transition:border-color 0.2s,transform 0.2s,box-shadow 0.2s}
+.card:hover{border-color:rgba(255,255,255,0.16);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+.card-h{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;font-family:var(--mono)}
+.card-body{padding:18px}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g6040{display:grid;grid-template-columns:1.6fr 1fr;gap:14px}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+th{padding:10px 14px;text-align:left;font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.05)}
+td{padding:13px 14px;font-size:13px;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.06)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.025)}
+.tm{font-family:var(--mono)}.tg{color:var(--green);font-family:var(--mono)}.tr2{color:var(--red);font-family:var(--mono)}.tmu{color:var(--muted);font-family:var(--mono);font-size:11px}
+
+/* BADGES */
+.bdg{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:600;font-family:var(--mono)}
+.bdg-blue{background:rgba(92,95,239,0.1);color:var(--blue)}
+.bdg-green{background:rgba(34,211,165,0.1);color:var(--green)}
+.bdg-muted{background:rgba(255,255,255,0.05);color:var(--muted)}
+
+/* ASSET ICONS */
+.ai{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ai-s{background:rgba(92,95,239,0.1)}.ai-r{background:rgba(34,211,165,0.1)}.ai-c{background:rgba(255,179,71,0.1)}.ai-a{background:rgba(201,169,110,0.1)}.ai-w{background:rgba(155,93,229,0.1)}.ai-ca{background:rgba(255,255,255,0.05)}
+
+/* NW HERO */
+.nw-hero{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:32px 36px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden}
+.nw-hero::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#5C5FEF,#22D3A5);border-radius:3px 0 0 3px}
+.nw-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.nw-amount{font-family:var(--mono);font-size:clamp(44px,4.5vw,58px);font-weight:600;letter-spacing:-2.5px;line-height:1;color:var(--text)}
+.nw-change{display:flex;align-items:center;gap:8px;margin-top:10px}
+.nw-change-val{font-family:var(--mono);font-size:13px;font-weight:500}
+.nw-period{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.nw-stats{display:flex;gap:32px}
+.nw-stat-label{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.nw-stat-val{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text)}
+.nw-stat-val.up{color:var(--green)}.nw-stat-val.dn{color:var(--red)}
+
+/* GOAL */
+.goal-bar-card{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px 24px;margin-bottom:16px}
+.goal-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.goal-label{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.goal-val{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text)}
+.goal-pct{font-family:var(--mono);font-size:12px;color:var(--green);font-weight:600}
+.goal-track{height:5px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden}
+.goal-fill{height:100%;background:linear-gradient(90deg,#5C5FEF,#22D3A5);border-radius:10px;transition:width 1.4s cubic-bezier(0.34,1.1,0.64,1)}
+
+/* ALLOC LEGEND */
+.alloc-legend{display:flex;flex-direction:column;gap:9px}
+.al-item{display:flex;align-items:center;gap:9px}
+.al-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.al-label{font-size:12px;color:var(--text);flex:1}
+.al-pct{font-family:var(--mono);font-size:12px;font-weight:600;min-width:32px;text-align:right}
+
+/* PROGRESS ROWS */
+.pr-row{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.pr-row:last-child{margin-bottom:0}
+.pr-top{display:flex;justify-content:space-between}
+.pr-label{font-size:12px;color:var(--text);font-weight:500}
+.pr-val{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.pr-bar{height:4px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden}
+.pr-fill{height:100%;border-radius:2px;transition:width 1s ease}
+
+/* TIMELINE */
+.tl-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:4px;flex-shrink:0}
+.tl-dot.green{background:var(--green)}.tl-dot.red{background:var(--red)}.tl-dot.gold{background:var(--gold)}
+.tl-title{font-size:13px;font-weight:500}
+.tl-meta{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+
+/* REPORT */
+.rpt-heading{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:14px}
+.rpt-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.rpt-stat{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px}
+.rpt-stat-label{font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.rpt-stat-val{font-family:var(--mono);font-size:17px;font-weight:600}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex;animation:modalIn 0.28s cubic-bezier(0.16,1,0.3,1)}
+.modal{background:var(--surface);border:1px solid rgba(255,255,255,0.1);border-radius:16px;width:100%;max-width:500px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.7)}
+.modal-h{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1}
+.modal-title{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.5px}
+.modal-x{background:none;border:none;color:var(--muted);font-size:17px;cursor:pointer;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all 0.15s}
+.modal-x:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+.modal-body{padding:22px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ff{display:flex;flex-direction:column;gap:5px}
+.ff.full{grid-column:1/-1}
+.ff label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:2px;text-transform:uppercase}
+.ff input,.ff select,.ff textarea{background:var(--bg);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans);transition:border-color 0.2s,box-shadow 0.2s;width:100%}
+.ff input:focus,.ff select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(92,95,239,0.12)}
+.ff input::placeholder{color:var(--muted2)}
+.ff select option{background:var(--navy2)}
+.btn-cancel{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--muted);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:var(--sans);transition:all 0.18s}
+.btn-cancel:hover{border-color:var(--border2);color:var(--text)}
+.btn-save{background:var(--blue);border:none;color:#fff;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.18s;letter-spacing:-0.1px}
+.btn-save:hover{background:#4a4def;box-shadow:0 4px 12px rgba(92,95,239,0.4)}
+
+/* INSIGHTS CARD */
+.insights-card{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.insight-item{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.insight-item:last-child{border-bottom:none}
+.insight-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);margin-top:5px;flex-shrink:0}
+.insight-text{font-size:13px;color:var(--muted);line-height:1.5}
+.insight-text strong{color:var(--text);font-weight:500}
+
+
+/* LIGHT MODE */
+body.light-mode{
+  --bg:#F5F5F0;--surface:#FFFFFF;--surface2:#F0EFF8;
+  --navy:#FFFFFF;--navy2:#F5F5F0;--navy3:#EEEEF8;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.14);
+  --text:#18181B;--muted:#6B7280;--muted2:#9CA3AF;
+}
+body.light-mode .app-topbar{background:rgba(255,255,255,0.96)!important}
+body.light-mode .lnav{background:rgba(245,245,240,0.96)!important}
+body.light-mode .sidebar{background:#FAFAF8;border-right-color:rgba(0,0,0,0.07)}
+body.light-mode .sb-item:hover{background:rgba(0,0,0,0.04)}
+body.light-mode .sb-item.active{background:rgba(92,95,239,0.08)}
+body.light-mode .skel{background:linear-gradient(90deg,rgba(0,0,0,0.05) 25%,rgba(0,0,0,0.08) 50%,rgba(0,0,0,0.05) 75%);background-size:400px 100%}
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted2);pointer-events:none}
+.search-input{width:100%;background:var(--surface);border:1px solid rgba(255,255,255,0.08);border-radius:9px;padding:10px 12px 10px 36px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans);transition:border-color 0.2s,box-shadow 0.2s}
+.search-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(92,95,239,0.12)}
+.search-input::placeholder{color:var(--muted2)}
+
+/* ═══ WEALTH INTELLIGENCE ═══ */
+.wi-section{margin-bottom:14px}
+.wi-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.wi-title{font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.wi-title-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 2.5s infinite}
+.wi-badge{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:0.1em;text-transform:uppercase}
+
+/* Daily snapshot */
+.snapshot-card{background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:18px 22px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.snap-item{display:flex;flex-direction:column;gap:3px}
+.snap-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:0.1em;text-transform:uppercase}
+.snap-val{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--text)}
+.snap-val.up{color:var(--green)}.snap-val.dn{color:var(--red)}
+.snap-divider{width:1px;height:36px;background:rgba(255,255,255,0.06);flex-shrink:0}
+
+/* Sentiment indicator */
+.sentiment-pill{display:inline-flex;align-items:center;gap:7px;padding:5px 14px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.05em;border:1px solid}
+.sentiment-bull{background:rgba(34,211,165,0.08);border-color:rgba(34,211,165,0.2);color:var(--green)}
+.sentiment-bear{background:rgba(240,92,113,0.08);border-color:rgba(240,92,113,0.2);color:var(--red)}
+.sentiment-neut{background:rgba(232,160,48,0.08);border-color:rgba(232,160,48,0.2);color:var(--amber)}
+.sentiment-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* Intelligence grid */
+.intel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(max-width:800px){.intel-grid{grid-template-columns:1fr}}
+
+/* Insight + risk alert cards */
+.intel-card{background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:14px 16px;position:relative;transition:border-color 0.2s}
+.intel-card:hover{border-color:rgba(255,255,255,0.1)}
+.intel-card-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:7px}
+.intel-card-val{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--text);margin-bottom:4px;letter-spacing:-0.5px}
+.intel-card-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Risk alerts */
+.risk-alert{display:flex;align-items:flex-start;gap:11px;padding:13px 16px;border-radius:10px;margin-bottom:8px;border:1px solid;transition:all 0.2s}
+.risk-alert:last-child{margin-bottom:0}
+.risk-high{background:rgba(240,92,113,0.07);border-color:rgba(240,92,113,0.25)}
+.risk-med{background:rgba(232,160,48,0.07);border-color:rgba(232,160,48,0.25)}
+.risk-low{background:rgba(34,211,165,0.07);border-color:rgba(34,211,165,0.25)}
+.risk-icon{flex-shrink:0;margin-top:1px}
+.risk-icon.high{color:var(--red)}.risk-icon.med{color:var(--amber)}.risk-icon.ok{color:var(--green)}
+.risk-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.risk-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* Market intelligence */
+.market-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:800px){.market-grid{grid-template-columns:1fr}}
+.market-card{background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:12px;padding:16px;transition:all 0.2s}
+.market-card:hover{border-color:rgba(255,255,255,0.15);transform:translateY(-1px)}
+.market-card-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.market-card-text{font-size:12px;color:var(--text);line-height:1.6;margin-bottom:8px}
+.market-card-trend{font-family:var(--mono);font-size:10px;font-weight:600}
+.trend-up{color:var(--green)}.trend-dn{color:var(--red)}.trend-flat{color:var(--amber)}
+
+/* 3-scenario projection */
+.proj-scenarios{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:800px){.proj-scenarios{grid-template-columns:1fr}}
+.proj-scenario{border-radius:10px;padding:14px 16px;border:1px solid}
+.proj-scenario.bear{background:rgba(240,92,113,0.05);border-color:rgba(240,92,113,0.15)}
+.proj-scenario.base{background:rgba(92,95,239,0.07);border-color:rgba(92,95,239,0.2)}
+.proj-scenario.bull{background:rgba(34,211,165,0.05);border-color:rgba(34,211,165,0.15)}
+.proj-sc-label{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px}
+.proj-scenario.bear .proj-sc-label{color:var(--red)}
+.proj-scenario.base .proj-sc-label{color:var(--blue)}
+.proj-scenario.bull .proj-sc-label{color:var(--green)}
+.proj-sc-val{font-family:var(--mono);font-size:19px;font-weight:600;color:var(--text);letter-spacing:-0.5px}
+.proj-sc-5yr{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
+
+/* Panic Mode */
+.panic-btn{background:rgba(240,92,113,0.08);border:1px solid rgba(240,92,113,0.2);border-radius:8px;padding:8px 18px;font-size:12px;font-weight:600;color:var(--red);cursor:pointer;font-family:var(--sans);transition:all 0.2s;display:inline-flex;align-items:center;gap:7px}
+.panic-btn:hover{background:rgba(240,92,113,0.14);border-color:rgba(240,92,113,0.35)}
+.panic-result{background:rgba(240,92,113,0.05);border:1px solid rgba(240,92,113,0.15);border-radius:12px;padding:18px 20px;margin-top:12px;display:none}
+.panic-result.show{display:block;animation:fadeIn 0.25s ease}
+.panic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:800px){.panic-grid{grid-template-columns:1fr 1fr}}
+.panic-stat{background:rgba(240,92,113,0.06);border-radius:8px;padding:12px}
+.panic-stat-label{font-family:var(--mono);font-size:9px;color:rgba(240,92,113,0.7);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px}
+.panic-stat-val{font-family:var(--mono);font-size:16px;font-weight:600;color:var(--red)}
+
+/* Premium lock */
+.lock-overlay{position:relative;overflow:hidden}
+.lock-overlay::after{content:'';position:absolute;inset:0;background:rgba(13,13,18,0.7);backdrop-filter:blur(3px);border-radius:inherit;z-index:10}
+.lock-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;background:var(--surface);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 18px;text-align:center;pointer-events:none}
+.lock-badge svg{display:block;margin:0 auto 6px;color:var(--muted)}
+.lock-badge-text{font-size:11px;color:var(--muted);font-family:var(--mono);white-space:nowrap}
+.lock-badge-plan{font-size:10px;color:var(--blue);font-family:var(--mono);margin-top:2px}
+
+/* PLAN GATES */
+.plan-gate{position:relative;border-radius:14px;overflow:hidden}
+.plan-gate-overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(13,13,18,0.82);backdrop-filter:blur(6px);border-radius:14px;border:1px solid rgba(255,255,255,0.06)}
+.plan-gate-icon{width:40px;height:40px;border-radius:10px;background:rgba(92,95,239,0.12);border:1px solid rgba(92,95,239,0.2);display:flex;align-items:center;justify-content:center;color:var(--blue)}
+.plan-gate-label{font-size:12px;font-weight:600;color:var(--text);text-align:center}
+.plan-gate-sub{font-size:11px;color:var(--muted);text-align:center;margin-top:-4px}
+.plan-gate-btn{background:var(--blue);border:none;border-radius:7px;padding:8px 20px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.18s;margin-top:4px}
+.plan-gate-btn:hover{background:#4a4def;transform:translateY(-1px)}
+.asset-limit-bar{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.asset-limit-info{font-size:12px;color:var(--muted)}
+.asset-limit-info strong{color:var(--text);font-weight:600}
+.asset-limit-progress{flex:1;max-width:120px;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.asset-limit-fill{height:100%;border-radius:2px;background:var(--blue);transition:width 0.6s ease}
+.asset-limit-fill.warn{background:var(--amber)}.asset-limit-fill.full{background:var(--red)}
+.upgrade-cta{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(92,95,239,0.15),rgba(34,211,165,0.08));border:1px solid rgba(92,95,239,0.25);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;color:var(--blue);cursor:pointer;transition:all 0.18s;font-family:var(--sans)}
+.upgrade-cta:hover{background:linear-gradient(135deg,rgba(92,95,239,0.25),rgba(34,211,165,0.14));transform:translateY(-1px)}
+.upgrade-cta svg{width:12px;height:12px}
+
+/* ANIMATIONS */
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes numberGlow{0%,100%{text-shadow:none}50%{text-shadow:0 0 20px rgba(92,95,239,0.4)}}
+@keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(92,95,239,0.4)}70%{box-shadow:0 0 0 10px rgba(92,95,239,0)}100%{box-shadow:0 0 0 0 rgba(92,95,239,0)}}
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+.nw-amount{animation:numberGlow 4s ease-in-out infinite}
+.lnav-logomark{animation:pulseRing 3s ease infinite}
+.hero h1{animation:slideUp 0.7s cubic-bezier(0.16,1,0.3,1) both}
+.hero-sub{animation:slideUp 0.7s 0.1s cubic-bezier(0.16,1,0.3,1) both}
+.hero-tagline{animation:slideUp 0.7s 0.15s cubic-bezier(0.16,1,0.3,1) both}
+.hero-btns{animation:slideUp 0.7s 0.2s cubic-bezier(0.16,1,0.3,1) both}
+.hero-preview{animation:slideUp 0.9s 0.3s cubic-bezier(0.16,1,0.3,1) both}
+.hero-badge{animation:slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both}
+.wi-title-dot{animation:pulse 2.5s infinite}
+.badge-dot{animation:pulse 2s infinite}
+
+/* LANDING FEATURE ANIMATIONS */
+.feat-card{animation:none;transition:all 0.25s cubic-bezier(0.16,1,0.3,1)}
+.feat-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,0.45);border-color:rgba(92,95,239,0.4)}
+.at-card{transition:all 0.22s cubic-bezier(0.16,1,0.3,1)}
+.why-card{transition:all 0.22s cubic-bezier(0.16,1,0.3,1)}
+.mc{transition:all 0.22s cubic-bezier(0.16,1,0.3,1)}
+
+/* ANIMATED HERO PREVIEW NUMBERS */
+.pc-val{animation:slideUp 1s 0.5s both}
+
+/* COMPARE TABLE */
+.compare-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:40px}
+.compare-table th{padding:12px 20px;font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted2);letter-spacing:0.1em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.06);text-align:left}
+.compare-table th.plan-col{text-align:center;min-width:120px}
+.compare-table th.plan-col.highlighted{color:var(--blue)}
+.compare-table td{padding:11px 20px;font-size:13px;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.04)}
+.compare-table td.plan-col{text-align:center}
+.compare-table td.feature-name{color:var(--muted);font-size:12px}
+.compare-table .check{color:var(--green);font-size:14px}
+.compare-table .cross{color:var(--muted2);font-size:14px}
+.compare-table .partial{color:var(--amber);font-size:11px;font-family:var(--mono)}
+.compare-table .highlighted-col{background:rgba(92,95,239,0.04)}
+.compare-table tr:last-child td{border-bottom:none}
+
+/* SOCIAL PROOF NUMBERS */
+.proof-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden;margin-bottom:60px}
+.proof-item{padding:28px 24px;text-align:center;border-right:1px solid rgba(255,255,255,0.06)}
+.proof-item:last-child{border-right:none}
+.proof-num{font-family:var(--mono);font-size:30px;font-weight:600;color:var(--text);letter-spacing:-1.5px;margin-bottom:6px}
+.proof-label{font-size:12px;color:var(--muted)}
+@media(max-width:800px){.proof-grid{grid-template-columns:1fr 1fr}.compare-table{font-size:11px}.proof-item{border-right:none;border-bottom:1px solid rgba(255,255,255,0.06)}.proof-item:last-child{border-bottom:none}}
+
+/* UPGRADE BANNER in dashboard */
+.upgrade-banner{background:linear-gradient(135deg,rgba(92,95,239,0.1),rgba(34,211,165,0.06));border:1px solid rgba(92,95,239,0.2);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.upgrade-banner-text{font-size:13px;color:var(--text)}
+.upgrade-banner-text span{color:var(--blue);font-weight:600}
+
+/* SKELETONS */
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.skel{background:linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.04) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+.skel-card{height:90px;border-radius:12px;margin-bottom:12px}
+.skel-row{height:14px;margin-bottom:10px;border-radius:4px}
+.skel-row.short{width:60%}
+.skel-row.med{width:80%}
+.skel-chart{height:200px;border-radius:10px;margin-bottom:14px}
+.skel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px;margin-bottom:18px}
+
+/* FEAT ICON WRAP */
+.feat-icon-wrap{width:38px;height:38px;border-radius:10px;background:rgba(92,95,239,0.08);border:1px solid rgba(92,95,239,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:16px;color:var(--blue)}.feat-icon-wrap svg{width:18px;height:18px;stroke-width:1.5}
+.feat-icon{font-size:24px;margin-bottom:14px}
+
+/* ASSET TYPE ICON WRAP */
+.at-icon-wrap{width:46px;height:46px;border-radius:12px;background:rgba(92,95,239,0.07);border:1px solid rgba(92,95,239,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--blue)}.at-icon-wrap svg{width:20px;height:20px;stroke-width:1.5}
+.at-icon{font-size:22px;margin-bottom:10px}
+
+/* WHY WEALTHOS */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.why-card{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px 24px;transition:all 0.25s}
+.why-card:hover{border-color:rgba(92,95,239,0.25);transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,0.35)}
+.why-icon{width:40px;height:40px;border-radius:11px;background:rgba(92,95,239,0.08);border:1px solid rgba(92,95,239,0.14);display:flex;align-items:center;justify-content:center;margin-bottom:18px;color:var(--blue)}.why-icon svg{width:18px;height:18px;stroke-width:1.5}
+.why-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:10px}
+.why-desc{font-size:13px;color:var(--muted);line-height:1.7}
+
+@media(max-width:800px){
+  .nw-stats{gap:12px;flex-wrap:wrap}
+  .nw-hero{flex-direction:column;gap:20px;align-items:flex-start;padding:24px 20px}
+  .nw-amount{font-size:38px!important}
+  .asset-types-grid{grid-template-columns:repeat(3,1fr)}
+  .how-grid{grid-template-columns:1fr}
+  .why-grid{grid-template-columns:1fr}
+  .feat-grid{grid-template-columns:1fr}
+  .hero{padding:72px 20px 48px}
+  .section{padding:60px 20px}
+  .lnav{padding:0 20px}
+  .lnav-links{display:none}
+  .hero-btns{flex-direction:column;align-items:stretch}
+  .btn-primary-lg,.btn-ghost-lg{text-align:center}
+  .main{padding:16px}
+  .ph{flex-direction:column;gap:12px}
+  .metrics-grid{grid-template-columns:1fr 1fr}
+  .g2,.g6040{grid-template-columns:1fr}
+  .price-grid{grid-template-columns:1fr}
+  .rpt-stat-grid{grid-template-columns:1fr 1fr}
+  .trusted-chips{gap:8px}
+  .preview-inner{grid-template-columns:1fr 1fr}
+  .footer-inner{flex-direction:column;gap:16px;text-align:center}
+  .footer-copy{text-align:center}
+}
+/* ── ADDITIONAL POLISH ── */
+/* Smooth page transitions */
+.page.active{animation:fadeIn 0.22s cubic-bezier(0.16,1,0.3,1)}
+
+/* Better focus styles for accessibility */
+button:focus-visible,input:focus-visible,select:focus-visible{
+  outline:2px solid var(--blue);outline-offset:2px
+}
+
+/* Print styles for reports */
+@media print{
+  .sidebar,.app-topbar,.ph-right,.btn{display:none!important}
+  .main{padding:0}
+  body{background:#fff;color:#000}
+  .card{border:1px solid #ddd;box-shadow:none}
+}
+
+/* Mobile touch improvements */
+@media(hover:none){
+  .feat-card:hover,.at-card:hover,.why-card:hover,.mc:hover,.card:hover{
+    transform:none;box-shadow:none
+  }
+}
+
+/* Selection color */
+::selection{background:rgba(92,95,239,0.3);color:var(--text)}
+
+
+/* ── AI BADGE STYLES ── */
+.ai-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,rgba(92,95,239,0.12),rgba(34,211,165,0.08));border:1px solid rgba(92,95,239,0.2);border-radius:20px;padding:3px 10px;font-family:var(--mono);font-size:9px;font-weight:600;color:var(--blue);letter-spacing:0.08em;text-transform:uppercase}
+.ai-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+
+/* ── NAV POLISH ── */
+.lnav-links a{position:relative}
+.lnav-links a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--blue);transition:width 0.2s ease}
+.lnav-links a:hover::after{width:100%}
+
+/* ── FOOTER POLISH ── */
+.footer-logo{display:flex;align-items:center;gap:8px}
+
+/* ── DASHBOARD CARD HEADER AI INDICATOR ── */
+.card-title-ai{display:flex;align-items:center;gap:8px}
+.card-title-ai::after{content:'AI';font-family:var(--mono);font-size:8px;font-weight:700;color:var(--blue);background:rgba(92,95,239,0.1);border:1px solid rgba(92,95,239,0.2);border-radius:4px;padding:1px 5px;letter-spacing:0.08em}
+
+/* ── SECTION LABEL ── */
+.section-label{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;font-weight:600;color:var(--blue);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px;background:rgba(92,95,239,0.10);border:1px solid rgba(92,95,239,0.22);border-radius:20px;padding:5px 14px}
+
+
+/* ══════════════════════════════════════════════
+   FEATURE 1: ANNUAL PRICING TOGGLE
+══════════════════════════════════════════════ */
+.billing-toggle{display:flex;align-items:center;justify-content:center;gap:0;background:var(--surface);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:4px;margin:0 auto 36px;width:fit-content}
+.billing-opt{padding:8px 22px;border-radius:7px;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;color:var(--muted);background:none;border:none}
+.billing-opt.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(92,95,239,0.35)}
+.billing-save{display:inline-block;background:rgba(34,211,165,0.12);border:1px solid rgba(34,211,165,0.25);color:var(--green);font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.1em;border-radius:20px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.price-per-year{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px;min-height:16px;transition:all 0.2s}
+
+EATURE 3: ONBOARDING TOUR
+══════════════════════════════════════════════ */
+.tour-modal{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;background:rgba(10,10,15,0.8);backdrop-filter:blur(8px);padding:20px}
+.tour-modal.show{display:flex;animation:fadeIn 0.22s ease}
+.tour-box{background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:20px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.6)}
+.tour-progress{height:2px;background:rgba(255,255,255,0.06)}
+.tour-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));transition:width 0.4s cubic-bezier(0.16,1,0.3,1)}
+.tour-body{padding:32px}
+.tour-step-label{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--blue);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:12px}
+.tour-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:10px;letter-spacing:-0.3px}
+.tour-desc{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:24px}
+.tour-visual{background:rgba(92,95,239,0.06);border:1px solid rgba(92,95,239,0.12);border-radius:12px;padding:16px;margin-bottom:24px;display:flex;align-items:center;gap:14px}
+.tour-visual-icon{width:44px;height:44px;border-radius:10px;background:rgba(92,95,239,0.12);border:1px solid rgba(92,95,239,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--blue)}
+.tour-visual-text{font-size:13px;color:var(--text);line-height:1.5}
+.tour-visual-text span{color:var(--blue);font-weight:600}
+.tour-footer{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tour-dots{display:flex;gap:6px}
+.tour-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.2s}
+.tour-dot.active{background:var(--blue);width:18px;border-radius:3px}
+.tour-next-btn{background:var(--blue);border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.18s}
+.tour-next-btn:hover{background:#4a4def}
+.tour-skip-btn{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--sans);padding:4px}
+.tour-skip-btn:hover{color:var(--text)}
+
+/* ══════════════════════════════════════════════
+   FEATURE 4: BETTER PLAN SELECTOR
+══════════════════════════════════════════════ */
+.plan-selector{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.plan-opt{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1px solid rgba(255,255,255,0.09);border-radius:10px;cursor:pointer;transition:all 0.18s;background:rgba(255,255,255,0.02)}
+.plan-opt:hover{border-color:rgba(92,95,239,0.3);background:rgba(92,95,239,0.04)}
+.plan-opt.selected{border-color:var(--blue);background:rgba(92,95,239,0.08)}
+.plan-opt input[type=radio]{width:15px;height:15px;accent-color:var(--blue);flex-shrink:0;margin-top:2px}
+.plan-opt-name{font-size:13px;font-weight:600;color:var(--text)}
+.plan-opt-price{font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:600;margin-left:6px}
+.plan-opt-features{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+.plan-opt-badge{display:inline-block;background:rgba(92,95,239,0.12);border:1px solid rgba(92,95,239,0.2);color:var(--blue);font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:0.1em;border-radius:20px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+
+/* ══════════════════════════════════════════════
+   FEATURE 5: CSV IMPORT
+══════════════════════════════════════════════ */
+.csv-modal-overlay{position:fixed;inset:0;background:rgba(10,10,15,0.85);backdrop-filter:blur(8px);z-index:2100;display:none;align-items:center;justify-content:center;padding:20px}
+.csv-modal-overlay.show{display:flex;animation:fadeIn 0.2s ease}
+.csv-box{background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:20px;width:100%;max-width:560px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.6)}
+.csv-header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between}
+.csv-title{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text);letter-spacing:0.05em;text-transform:uppercase}
+.csv-body{padding:24px}
+.csv-drop{border:2px dashed rgba(255,255,255,0.12);border-radius:12px;padding:32px 24px;text-align:center;margin-bottom:18px;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.01)}
+.csv-drop:hover,.csv-drop.dragover{border-color:rgba(92,95,239,0.4);background:rgba(92,95,239,0.05)}
+.csv-drop-icon{width:40px;height:40px;border-radius:10px;background:rgba(92,95,239,0.1);border:1px solid rgba(92,95,239,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;color:var(--blue)}
+.csv-drop-text{font-size:13px;color:var(--muted);margin-bottom:4px}
+.csv-drop-sub{font-size:11px;color:var(--muted2)}
+.csv-template{font-family:var(--mono);font-size:10px;color:var(--muted2);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:12px;margin-bottom:16px;line-height:1.8;overflow-x:auto;white-space:nowrap}
+.csv-or{text-align:center;color:var(--muted2);font-size:12px;margin-bottom:12px;font-family:var(--mono)}
+.csv-textarea{width:100%;background:var(--bg);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:12px;font-family:var(--mono);font-size:11px;color:var(--text);resize:vertical;min-height:80px;outline:none;transition:border-color 0.2s}
+.csv-textarea:focus{border-color:var(--blue)}
+.csv-textarea::placeholder{color:var(--muted2)}
+.csv-preview{margin-top:14px;display:none}
+.csv-preview-title{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
+.csv-preview-table{width:100%;font-size:11px;border-collapse:collapse}
+.csv-preview-table th{font-family:var(--mono);font-size:9px;color:var(--muted2);text-align:left;padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.csv-preview-table td{padding:5px 8px;color:var(--text);border-bottom:1px solid rgba(255,255,255,0.04)}
+.csv-footer{padding:16px 24px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;justify-content:flex-end}
+.csv-import-btn{background:var(--blue);border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.18s}
+.csv-import-btn:hover{background:#4a4def}
+.csv-import-btn:disabled{opacity:0.4;cursor:not-allowed}
+.csv-cancel-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:10px 16px;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--sans)}
+.csv-error{color:var(--red);font-size:12px;margin-top:8px;display:none}
+
+/* ══════════════════════════════════════════════
+   FEATURE 7: MILESTONE TIMELINE
+══════════════════════════════════════════════ */
+.timeline-chart-wrap{position:relative;height:260px;margin-bottom:14px}
+.milestone-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.milestone-item:last-child{border-bottom:none}
+.milestone-dot-wrap{display:flex;flex-direction:column;align-items:center;padding-top:3px}
+.milestone-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:2px solid}
+.milestone-dot.green{background:rgba(34,211,165,0.2);border-color:var(--green)}
+.milestone-dot.blue{background:rgba(92,95,239,0.2);border-color:var(--blue)}
+.milestone-dot.red{background:rgba(240,92,113,0.2);border-color:var(--red)}
+.milestone-dot.gold{background:rgba(200,160,106,0.2);border-color:var(--gold)}
+.milestone-line{width:1px;flex:1;background:rgba(255,255,255,0.06);margin-top:4px;min-height:20px}
+.milestone-content{flex:1}
+.milestone-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
+.milestone-name{font-size:13px;font-weight:500;color:var(--text)}
+.milestone-val{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.milestone-date-row{font-family:var(--mono);font-size:10px;color:var(--muted2)}
+
+/* ══════════════════════════════════════════════
+   FEATURE 8: SHARE LINK
+══════════════════════════════════════════════ */
+.share-modal-overlay{position:fixed;inset:0;background:rgba(10,10,15,0.85);backdrop-filter:blur(8px);z-index:2200;display:none;align-items:center;justify-content:center;padding:20px}
+.share-modal-overlay.show{display:flex;animation:fadeIn 0.2s ease}
+.share-box{background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:20px;width:100%;max-width:480px;padding:28px;box-shadow:0 32px 80px rgba(0,0,0,0.6)}
+.share-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-0.2px}
+.share-desc{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.share-url-wrap{display:flex;gap:8px;margin-bottom:16px}
+.share-url-input{flex:1;background:var(--bg);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:11px;color:var(--muted);outline:none}
+.share-copy-btn{background:var(--blue);border:none;border-radius:8px;padding:10px 16px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);white-space:nowrap;transition:all 0.18s}
+.share-copy-btn:hover{background:#4a4def}
+.share-info{background:rgba(34,211,165,0.06);border:1px solid rgba(34,211,165,0.15);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.share-info strong{color:var(--green)}
+.share-close-btn{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:10px;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--sans)}
+.share-read-only-banner{background:rgba(232,160,48,0.08);border:1px solid rgba(232,160,48,0.2);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;display:none}
+.share-read-only-banner.show{display:flex}
+.share-ro-text{font-size:12px;color:var(--amber)}
+
+/* ══════════════════════════════════════════════
+   FEATURE 9: COMPARISON SECTION
+══════════════════════════════════════════════ */
+.vs-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:32px}
+.vs-table th{padding:16px 20px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.08);text-align:center}
+.vs-table th:first-child{text-align:left;color:var(--muted2)}
+.vs-table th.vs-us{color:var(--blue);background:rgba(92,95,239,0.06)}
+.vs-table td{padding:14px 20px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:center;color:var(--muted)}
+.vs-table td:first-child{text-align:left;color:var(--text);font-weight:500}
+.vs-table td.vs-us{background:rgba(92,95,239,0.04)}
+.vs-table tr:last-child td{border-bottom:none}
+.vs-yes{color:var(--green);font-size:15px}
+.vs-no{color:var(--muted2);font-size:13px}
+.vs-partial{color:var(--amber);font-size:11px;font-family:var(--mono)}
+
+/* ══════════════════════════════════════════════
+   INSTALL PWA PROMPT
+══════════════════════════════════════════════ */
+.pwa-prompt{position:fixed;bottom:24px;right:24px;z-index:600;background:var(--surface);border:1px solid rgba(92,95,239,0.3);border-radius:14px;padding:16px 18px;max-width:280px;box-shadow:0 16px 48px rgba(0,0,0,0.5);display:none;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1)}
+.pwa-prompt.show{display:block}
+.pwa-prompt-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.pwa-prompt-sub{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5}
+.pwa-prompt-btns{display:flex;gap:8px}
+.pwa-install-btn{flex:1;background:var(--blue);border:none;border-radius:7px;padding:8px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans)}
+.pwa-dismiss-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:7px;padding:8px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:var(--sans)}
+
+/* ══════════════════════════════════════════════
+   SIDEBAR ADDITIONS
+══════════════════════════════════════════════ */
+.sb-item.share-btn-item{margin-top:auto;color:var(--blue)}
+
+
+/* ── FEATURE: AI CHAT ── */
+.chat-panel{
+  position:fixed;bottom:24px;right:24px;z-index:900;
+  width:440px;
+  height:580px;
+  max-height:calc(100vh - 60px);
+  background:var(--surface);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+  box-shadow:0 32px 80px rgba(0,0,0,0.65);
+  display:flex;flex-direction:column;overflow:hidden;
+  transform:translateY(24px) scale(0.95);opacity:0;pointer-events:none;
+  transition:all 0.28s cubic-bezier(0.16,1,0.3,1);
+}
+.chat-panel.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
+.chat-header{
+  padding:14px 18px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.chat-header-left{display:flex;align-items:center;gap:10px}
+.chat-ai-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+.chat-title{font-size:13px;font-weight:600;color:var(--text)}
+.chat-subtitle{font-size:10px;color:var(--muted);font-family:var(--mono)}
+.chat-close{background:none;border:none;color:var(--muted);cursor:pointer;padding:6px;display:flex;align-items:center;border-radius:6px;transition:all 0.15s}
+.chat-close:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+.chat-messages{
+  flex:1;overflow-y:auto;
+  padding:18px 16px;
+  display:flex;flex-direction:column;gap:14px;
+  min-height:200px;scroll-behavior:smooth;
+}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+.chat-msg{
+  display:flex;gap:10px;
+  width:100%;box-sizing:border-box;
+  align-items:flex-start;
+}
+.chat-msg.user{flex-direction:row-reverse}
+.chat-avatar{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;
+  flex-shrink:0;margin-top:2px;
+}
+.chat-msg.ai .chat-avatar{
+  background:linear-gradient(135deg,rgba(92,95,239,0.42) 0%,rgba(123,126,247,0.26) 100%);
+  color:#c4c6ff;
+  border:1px solid rgba(123,126,247,0.55);
+  box-shadow:0 0 0 3px rgba(92,95,239,0.14),0 2px 14px rgba(92,95,239,0.36);
+  animation:avatar-breathe 4s ease-in-out infinite;
+}
+.chat-msg.user .chat-avatar{background:rgba(255,255,255,0.08);color:var(--muted);border:1px solid rgba(255,255,255,0.1)}
+@keyframes avatar-breathe{
+  0%,100%{box-shadow:0 0 0 3px rgba(92,95,239,0.14),0 2px 14px rgba(92,95,239,0.36)}
+  50%{box-shadow:0 0 0 5px rgba(92,95,239,0.22),0 2px 20px rgba(92,95,239,0.52)}
+}
+.chat-bubble{
+  padding:11px 15px;
+  border-radius:14px;
+  font-size:13px;line-height:1.65;
+  max-width:calc(100% - 52px);
+  min-width:0;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  white-space:normal;
+  box-sizing:border-box;
+}
+.chat-msg.ai .chat-bubble{
+  background:rgba(255,255,255,0.06);
+  color:var(--text);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:4px 14px 14px 14px;
+}
+.chat-msg.user .chat-bubble{
+  background:var(--blue);
+  color:#fff;
+  border-radius:14px 4px 14px 14px;
+}
+.chat-typing-wrap{display:flex;gap:4px;padding:4px 0;align-items:center}
+.chat-typing-dot{width:6px;height:6px;border-radius:50%;background:var(--muted2);animation:chatBounce 1.2s infinite;flex-shrink:0}
+.chat-typing-dot:nth-child(2){animation-delay:0.2s}
+.chat-typing-dot:nth-child(3){animation-delay:0.4s}
+@keyframes chatBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.chat-suggestions{
+  padding:8px 16px 10px;
+  display:flex;flex-direction:row;gap:7px;
+  flex-shrink:0;
+  border-top:1px solid rgba(255,255,255,0.06);
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.chat-suggestions::-webkit-scrollbar{display:none}
+.chat-suggestion{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.09);
+  border-radius:20px;
+  padding:7px 14px;
+  font-size:11.5px;color:var(--muted);
+  cursor:pointer;
+  white-space:nowrap;
+  flex-shrink:0;
+  transition:all 0.15s;font-family:var(--sans);
+  line-height:1.4;
+}
+.chat-suggestion:hover{border-color:rgba(92,95,239,0.4);color:var(--text);background:rgba(92,95,239,0.07)}
+.chat-input-wrap{
+  padding:12px 16px;
+  border-top:1px solid rgba(255,255,255,0.08);
+  display:flex;gap:8px;flex-shrink:0;
+  align-items:flex-end;
+}
+.chat-input{
+  flex:1;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  padding:10px 14px;
+  font-size:13px;color:var(--text);
+  outline:none;font-family:var(--sans);
+  transition:border-color 0.2s;
+  line-height:1.5;resize:none;
+  min-height:42px;max-height:120px;
+  overflow-y:auto;
+}
+.chat-input:focus{border-color:rgba(92,95,239,0.45)}
+.chat-input::placeholder{color:var(--muted2)}
+.chat-send{
+  background:var(--blue);border:none;border-radius:10px;
+  padding:10px 14px;cursor:pointer;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.18s;flex-shrink:0;height:42px;width:42px;
+}
+.chat-send:hover{background:#4a4def;transform:scale(1.05)}
+.chat-send:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+.chat-fab{
+  position:fixed;bottom:28px;right:28px;z-index:9999;
+  width:54px;height:54px;border-radius:50%;
+  background:var(--blue);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 32px rgba(92,95,239,0.6);
+  transition:all 0.2s;color:#fff;
+}
+.chat-fab:hover{transform:scale(1.08);box-shadow:0 10px 36px rgba(92,95,239,0.6)}
+.chat-fab.hidden{display:none}
+
+
+/* ── FEATURE: NET WORTH HISTORY ── */
+.history-chart-wrap{position:relative;height:200px;margin-bottom:8px}
+.history-empty{text-align:center;padding:32px;color:var(--muted);font-size:13px}
+
+/* ── FEATURE: MULTIPLE PORTFOLIOS ── */
+.portfolio-switcher{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:10px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.07);cursor:pointer;transition:all 0.18s}
+.portfolio-switcher:hover{border-color:rgba(255,255,255,0.12);background:rgba(255,255,255,0.05)}
+.portfolio-name{font-size:13px;font-weight:500;color:var(--text);flex:1}
+.portfolio-chevron{color:var(--muted2);transition:transform 0.2s}
+.portfolio-modal-overlay{position:fixed;inset:0;background:rgba(10,10,15,0.85);backdrop-filter:blur(8px);z-index:2300;display:none;align-items:center;justify-content:center;padding:20px}
+.portfolio-modal-overlay.show{display:flex;animation:fadeIn 0.2s ease}
+.portfolio-box{background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:18px;width:100%;max-width:400px;padding:24px;box-shadow:0 24px 64px rgba(0,0,0,0.55)}
+.portfolio-list{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.portfolio-list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid rgba(255,255,255,0.09);border-radius:10px;cursor:pointer;transition:all 0.18s}
+.portfolio-list-item:hover{border-color:rgba(92,95,239,0.3);background:rgba(92,95,239,0.04)}
+.portfolio-list-item.active{border-color:var(--blue);background:rgba(92,95,239,0.08)}
+.portfolio-item-name{font-size:13px;font-weight:500;color:var(--text)}
+.portfolio-item-meta{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.portfolio-item-del{background:none;border:none;color:var(--muted2);cursor:pointer;padding:4px 8px;font-size:12px;border-radius:4px;transition:all 0.15s}
+.portfolio-item-del:hover{color:var(--red);background:rgba(240,92,113,0.08)}
+.portfolio-new-input{width:100%;background:var(--bg);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans);margin-bottom:10px;transition:border-color 0.2s}
+.portfolio-new-input:focus{border-color:var(--blue)}
+
+/* ── FEATURE: GOAL DATE ── */
+.goal-date-hint{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.05)}
+.goal-date-hint span{color:var(--green);font-weight:600}
+
+/* ── FEATURE: KEYBOARD SHORTCUTS ── */
+.kbd-overlay{position:fixed;inset:0;background:rgba(10,10,15,0.85);backdrop-filter:blur(8px);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px}
+.kbd-overlay.show{display:flex;animation:fadeIn 0.2s ease}
+.kbd-box{background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:18px;width:100%;max-width:440px;padding:28px;box-shadow:0 24px 64px rgba(0,0,0,0.55)}
+.kbd-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px}
+.kbd-grid{display:flex;flex-direction:column;gap:8px}
+.kbd-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.kbd-row:last-child{border-bottom:none}
+.kbd-label{font-size:13px;color:var(--muted)}
+.kbd-key{display:inline-flex;align-items:center;gap:4px}
+.kbd-k{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.14);border-radius:5px;padding:2px 8px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text)}
+
+/* ── FEATURE: NOTIFICATION ── */
+.notif-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.15s;display:flex;align-items:center;gap:4px;font-size:11px;font-family:var(--mono)}
+.notif-btn:hover{color:var(--text);background:rgba(255,255,255,0.05)}
+.notif-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:none}
+.notif-dot.active{display:block}
+
+/* ── FEATURE: EMAIL SUMMARY ── */
+.email-summary-btn{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:8px;padding:9px 16px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;font-family:var(--sans);transition:all 0.18s}
+.email-summary-btn:hover{border-color:rgba(255,255,255,0.16);color:var(--text)}
+
+/* ── NET WORTH HISTORY VIEW ── */
+#v-history .card{margin-bottom:14px}
+
+/* ── LIGHT MODE FIXES ── */
+body.light-mode .chat-panel{background:#fff;border-color:rgba(0,0,0,0.1);box-shadow:0 24px 64px rgba(0,0,0,0.12)}
+body.light-mode .chat-msg.ai .chat-bubble{background:rgba(0,0,0,0.05);color:#18181B}
+body.light-mode .portfolio-box,.portfolio-box{background:var(--surface)}
+body.light-mode .portfolio-list-item{border-color:rgba(0,0,0,0.08)}
+body.light-mode .chat-input{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.1);color:#18181B}
+body.light-mode .kbd-box{background:#fff}
+
+
+.history-period-btns{display:flex;gap:6px;margin-bottom:16px}
+.hpb{background:var(--surface2);border:1px solid rgba(255,255,255,0.07);
+  border-radius:6px;padding:5px 14px;font-size:11px;font-weight:600;
+  font-family:var(--mono);color:var(--muted);cursor:pointer;transition:all 0.18s}
+.hpb.active{background:rgba(92,95,239,0.15);border-color:rgba(92,95,239,0.4);color:var(--blue)}
+.hpb:hover:not(.active){color:var(--text);border-color:rgba(255,255,255,0.15)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-cta{background:var(--blue);border:none;border-radius:9px;padding:11px 24px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.18s}.empty-cta:hover{background:#4a4ddf;transform:translateY(-1px);box-shadow:0 6px 20px rgba(92,95,239,0.35)}.insight-alert{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:10px;margin-bottom:10px;border:1px solid}.insight-alert.warn{background:rgba(240,160,48,0.09);border-color:rgba(240,160,48,0.32);box-shadow:inset 0 0 0 1px rgba(240,160,48,0.06)}.insight-alert.info{background:rgba(92,95,239,0.09);border-color:rgba(92,95,239,0.32);box-shadow:inset 0 0 0 1px rgba(92,95,239,0.06)}.insight-alert.good{background:rgba(34,211,165,0.09);border-color:rgba(34,211,165,0.32);box-shadow:inset 0 0 0 1px rgba(34,211,165,0.06)}.insight-alert-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px}.insight-alert-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}.insight-alert-desc{font-size:11px;color:var(--muted2);line-height:1.55}.insight-alert-text{flex:1}.hero .hero-sub{font-size:16px;max-width:400px;margin-left:auto;margin-right:auto}.hero-btns{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}.intel-card{transition:all 0.22s}.intel-card:hover{border-color:rgba(92,95,239,0.25);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.25)}.ff label{font-size:11px;font-weight:600;letter-spacing:0.05em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;display:block}.ff input:focus,.ff select:focus{border-color:rgba(92,95,239,0.5)!important;box-shadow:0 0 0 3px rgba(92,95,239,0.1)!important;outline:none}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET (≤768px) + MOBILE (≤480px)
+   Desktop (>768px) is completely unchanged.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── TABLET (≤768px) ── */
+/* ── MOBILE (≤480px) ── */
+/* ── Touch device improvements ── */
+
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE DESIGN — WealthOS
+   Only overrides for ≤768px and ≤480px.
+   Desktop (>768px) is 100% unchanged.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Tablet + Mobile: 768px and below ── */
+@media(max-width:768px){
+
+  /* Landing nav */
+  .lnav{padding:0 16px}
+  .lnav-links{display:none}
+  .lnav-signin{display:none!important}
+  .lnav-right{gap:8px}
+
+  /* Hero */
+  .hero{padding:72px 20px 48px}
+  .hero-btns{flex-direction:column;align-items:stretch;max-width:320px;margin-left:auto;margin-right:auto}
+  .btn-primary-lg{width:100%;text-align:center}
+  .btn-text-cta{width:100%;text-align:center}
+  
+  .hero-tagline{flex-wrap:wrap;gap:8px;justify-content:center}
+  
+  
+  .hero-preview{max-height:260px;overflow:hidden}
+
+  /* Landing sections */
+  .section{padding:48px 20px}
+  .features-section,.pricing-section,.compare-section,.why-section,.about-section{padding:48px 20px}
+  .footer-inner{flex-direction:column;gap:16px;text-align:center}
+  .footer-copy{text-align:center}
+
+  /* Dashboard topbar */
+  .app-topbar{padding:0 16px;height:52px}
+  .app-ticker{display:none}
+
+  /* Dashboard body — stack sidebar above main */
+  .app-body{flex-direction:column}
+
+  /* Sidebar → horizontal scroll tab bar */
+  .sidebar{
+    width:100%;
+    height:auto;
+    border-right:none;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    flex-direction:row;
+    overflow-x:auto;
+    overflow-y:hidden;
+    padding:0;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+    flex-shrink:0;
+    display:flex
+  }
+  .sidebar::-webkit-scrollbar{display:none}
+  .sb-items-wrap{display:flex;flex-direction:row;padding:4px 8px;gap:2px;min-width:max-content}
+  .sb-section{display:none}
+  .sb-item{flex-direction:column;gap:3px;padding:8px 12px;margin:0;font-size:10px;border-radius:8px;white-space:nowrap;min-width:56px;justify-content:center;align-items:center;text-align:center}
+  .sb-badge{display:none}
+
+  /* Main */
+  .main{padding:16px}
+
+  /* Grids */
+  .intel-grid{grid-template-columns:1fr}
+  .metrics-grid{grid-template-columns:1fr 1fr}
+
+  /* Page header */
+  .ph{flex-wrap:wrap;gap:10px;margin-bottom:16px}
+  .ph-right{flex-wrap:wrap;gap:8px}
+
+  /* Tables */
+  .card table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:540px}
+
+  /* Compare table */
+  .compare-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .compare-table{min-width:580px}
+
+  /* Modal — bottom sheet */
+  .modal-overlay{align-items:flex-end;padding:0}
+  .modal{border-radius:20px 20px 0 0;max-height:90vh;overflow-y:auto;width:100%;max-width:100%}
+
+  /* Forms */
+  .form-grid{grid-template-columns:1fr 1fr}
+  .ff.full{grid-column:1/-1}
+}
+
+/* ── Mobile only: 480px and below ── */
+@media(max-width:480px){
+
+  /* No horizontal scroll + perfect centering */
+  *,*::before,*::after{box-sizing:border-box}
+  html{overflow-x:hidden;width:100%}
+  body{overflow-x:hidden;width:100%;margin:0;padding:0}
+  #landing,#app,#auth{overflow-x:hidden;width:100%;max-width:100%}
+
+  /* Nav */
+  .lnav{padding:0 16px;height:52px}
+  .lnav-name,.app-username{display:none}
+  .lnav-cta{padding:7px 14px;font-size:12px}
+  .app-topbar{padding:0 12px;height:50px}
+  .app-brand-name{display:none}
+  .app-avatar{width:28px;height:28px;font-size:11px}
+
+  /* Hero */
+  .hero{padding:56px 16px 36px}
+  .hero h1{font-size:clamp(26px,8vw,36px);letter-spacing:-1px;line-height:1.1}
+  .hero .hero-sub{font-size:14px;line-height:1.6}
+  .hero-btns{flex-direction:column;align-items:stretch;width:100%;max-width:100%;gap:10px}
+  .btn-primary-lg{width:100%;text-align:center;padding:14px 20px;font-size:15px;min-height:48px}
+  .btn-text-cta{width:100%;text-align:center;padding:12px 20px;min-height:44px;display:block}
+  
+  .hero-principle{font-size:11px}
+  
+
+  /* Sections */
+  .section{padding:36px 16px}
+  .features-section,.pricing-section,.compare-section,.why-section,.about-section{padding:36px 16px}
+  .section-title{font-size:clamp(22px,6vw,30px)}
+  .section-sub{font-size:13px}
+
+  /* Pricing single column */
+  .pricing-grid,.price-grid{grid-template-columns:1fr}
+  .plan-card{padding:20px 16px}
+
+  /* Sidebar */
+  .sb-item{padding:7px 10px;font-size:9px;min-width:48px}
+  .sb-icon{width:18px;height:18px}
+
+  /* Main */
+  .main{padding:12px 12px 80px}
+
+  /* Cards */
+  .card{border-radius:12px;margin-bottom:10px}
+  .card-h{padding:14px 14px 0}
+  .card-body{padding:14px}
+
+  /* Grids — all single column */
+  .g2,.g3,.g6040{grid-template-columns:1fr;gap:10px}
+  .intel-grid{grid-template-columns:1fr;gap:8px}
+  .metrics-grid{grid-template-columns:1fr 1fr;gap:8px}
+
+  /* Net worth */
+  .nw-total{font-size:clamp(26px,8vw,38px)}
+  .nw-stats{flex-direction:column;gap:10px}
+  .nw-stat{font-size:12px}
+
+  /* Page header */
+  .ph{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:14px}
+  .ph-right{width:100%;justify-content:flex-start;gap:8px}
+  .ph-left h2{font-size:18px}
+  .ph-left p{font-size:12px}
+
+  /* Insight alerts */
+  .insight-alert{padding:10px 12px}
+  .insight-alert-title{font-size:12px}
+  .insight-alert-desc{font-size:10.5px}
+
+  /* Intel cards */
+  .intel-card{padding:14px}
+  .intel-card-val{font-size:18px}
+
+  /* Tables */
+  .card table{display:block;font-size:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:520px}
+  th,td{padding:10px}
+
+  /* History */
+  .history-period-btns{gap:4px}
+  .hpb{padding:5px 10px;font-size:10px}
+  #history-list div{padding:8px 0}
+
+  /* Modals */
+  .modal-overlay{padding:0}
+  .modal{border-radius:18px 18px 0 0;max-height:92vh;overflow-y:auto;width:100%;max-width:100%;-webkit-overflow-scrolling:touch}
+  .modal-h{padding:16px 16px 0}
+  .modal-body{padding:16px}
+  .modal-x{width:36px;height:36px;font-size:18px}
+
+  /* Forms — single column, 16px prevents iOS zoom */
+  .form-grid{grid-template-columns:1fr;gap:10px}
+  .ff.full{grid-column:1/-1}
+  .ff input,.ff select,.ff textarea{font-size:16px;min-height:44px;padding:10px 12px}
+  .ff label{font-size:11px;margin-bottom:4px}
+
+  /* Auth */
+  #auth{padding:0 16px}
+  .auth-box{padding:24px 20px;border-radius:16px;width:100%;max-width:100%}
+  .auth-tab{padding:10px 14px;font-size:13px}
+
+  /* Buttons — 44px touch targets */
+  .btn,.btn-p,.btn-g,.btn-s{min-height:44px;padding:11px 16px;font-size:13px}
+  .empty-cta{min-height:44px;padding:12px 24px}
+
+  /* Chat */
+  .chat-fab{width:48px;height:48px;bottom:20px;right:16px}
+  #chat-panel{width:100%!important;max-width:100vw;border-radius:0;bottom:0;right:0;height:85vh;max-height:85vh}
+  .chat-bubble{max-width:calc(100% - 46px)}
+
+  /* Misc */
+  .settings-grid{grid-template-columns:1fr}
+  .rpt-stat-grid{grid-template-columns:1fr 1fr}
+  .faq-item{padding:16px}
+  #waitlist-modal .waitlist-box{padding:24px 16px;border-radius:16px}
+  .chat-panel{width:100%!important;max-width:100vw;border-radius:0;bottom:0;right:0;height:85vh;max-height:85vh}
+  .chat-bubble{max-width:calc(100% - 46px)}
+}
+
+/* ── Touch device: disable hover states, ensure tap targets ── */
+@media(hover:none) and (pointer:coarse){
+  .card:hover,.intel-card:hover,.empty-cta:hover,.btn-primary-lg:hover,.feat-card:hover,.mc:hover{transform:none;box-shadow:none}
+  .sb-item{min-height:44px;justify-content:center}
+  .btn,.btn-p,.btn-g{min-height:44px}
+  .modal-x{width:36px;height:36px;font-size:18px}
+}
+
+.live-dot{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);color:var(--muted2);font-weight:500;letter-spacing:0.04em;margin-left:10px;vertical-align:middle}
+.live-dot-pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:livePulse 2.5s ease-in-out infinite;flex-shrink:0}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.85)}}
+@media(max-width:480px){html,body{margin:0;padding:0;width:100%;overflow-x:hidden}.main,.card,.g2,.g3,.intel-grid,.metrics-grid,.view,section,article{box-sizing:border-box;width:100%;max-width:100%;margin-left:auto;margin-right:auto}}
+.waitlist-submit:disabled{opacity:0.6;cursor:not-allowed}
+.waitlist-submit{transition:all 0.18s}
+
+/* ── Trust Strip — Premium ── */
+.trust-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 4px 32px 36px;
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.trust-item {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.trust-item.trust-primary {
+  color: rgba(242, 242, 250, 0.64);
+}
+
+.trust-item.trust-secondary {
+  color: rgba(242, 242, 250, 0.36);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.trust-sep { display: none; }
+
+/* ── Trust Strip Mobile ── */
+@media (max-width: 768px) {
+  .trust-strip { padding: 0 20px 28px; gap: 6px; }
+}
+@media (max-width: 480px) {
+  .trust-strip { padding: 0 16px 22px; gap: 5px; }
+  .trust-item { font-size: 11px; }
+  .trust-item.trust-secondary { font-size: 10.5px; }
+}
+
+/* ── Mobile Perfect Centering ── */
+@media(max-width:768px){
+  html,body{margin:0;padding:0;width:100%;overflow-x:hidden}
+  .app-body{width:100%;flex-direction:column}
+  .main{width:100%;max-width:100%;box-sizing:border-box;margin:0;padding:16px}
+  .card,.g2,.g3{width:100%;max-width:100%;box-sizing:border-box}
+}
+@media(max-width:480px){
+  .main{padding:12px;width:100%;max-width:100%;box-sizing:border-box;margin:0}
+  .nw-hero,.ov-metrics,.metrics-grid,.intel-grid{width:100%;max-width:100%;box-sizing:border-box}
+  .ph{width:100%;box-sizing:border-box;padding:0}
+  .ph-right{width:100%;box-sizing:border-box}
+  /* Value metrics row — prevent right shift */
+  .metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:0}
+  .mc{box-sizing:border-box;width:100%}
+}
+
+/* Hero headline size boost */
+.hero h1{font-size:clamp(48px,7vw,84px);font-weight:800;letter-spacing:-2.8px;line-height:1.03}
+
+/* 1. Wider hero — less narrow column feel */
+.hero{
+  max-width:1200px;
+  padding:112px 60px 88px;
+}
+
+/* 2. Subheading — MUST be 2 lines, not 3 */
+.hero-sub{
+  font-size:16px;
+  line-height:1.68;
+  max-width:780px;
+  margin:0 auto 22px;
+  font-weight:400;
+}
+
+/* 3. Tag pills — more breathing between them */
+.hero-tagline{
+  gap:22px;
+  margin-bottom:38px;
+  flex-wrap:nowrap;
+}
+.hero-principle{
+  padding:7px 16px;
+  letter-spacing:0.04em;
+}
+
+/* 4. Trust strip — 2 rows:
+      Row 1: "Built for investors and professionals managing real wealth"
+      Row 2 (1 line): "🔒 Your data never leaves your device · Trusted by investors in 40+ countries"
+*/
+.trust-strip{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:4px 32px 36px;
+  max-width:860px;
+  margin:0 auto;
+  text-align:center;
+}
+/* Row 1: "Built for investors…" — show, full width */
+.trust-strip .trust-primary{
+  display:block;
+  width:100%;
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:0.02em;
+}
+/* Row 2: the two trust-secondary + separator between them — one line */
+.trust-strip .trust-sep:first-of-type{ display:none }
+.trust-strip .trust-sep:last-of-type{
+  display:inline;
+  margin:0 8px;
+  color:var(--muted2);
+}
+.trust-strip .trust-secondary{
+  display:inline;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+/* Mobile */
+@media(max-width:640px){
+  .hero{ padding:72px 20px 52px }
+  .hero-sub{ font-size:15px; max-width:100% }
+  .hero-tagline{ gap:12px; flex-wrap:wrap }
+  .trust-strip{ padding:4px 16px 28px }
+  .trust-strip .trust-secondary{ white-space:normal }
+}
+
+/* ══════════════════════════════════════════════
+   HERO WIDTH + WRAPPING FIX (width only — no font changes)
+═══════════════════════════════════════════════ */
+
+/* FIX 3 — wider hero: reduce narrow center feeling */
+.hero { max-width: 1100px; }
+
+/* FIX 1 — subheading: wider container → naturally 2 lines */
+.hero-sub { max-width: 800px; margin: 0 auto; }
+
+/* FIX 4 — tag pills: more breathing room */
+.hero-tagline { gap: 20px; flex-wrap: nowrap; }
+
+/* FIX 2 — trust strip: keep structure, force secondary to 1 line */
+.trust-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 36px;
+  text-align: center;
+}
+.trust-strip .trust-primary { display: block; color: var(--muted); }
+.trust-strip .trust-sep:first-of-type { display: none; }
+.trust-strip .trust-sep:last-of-type  { display: inline; margin: 0 8px; }
+.trust-strip .trust-secondary { display: inline; white-space: nowrap; }
+
+/* Mobile: revert wrapping only */
+@media (max-width: 640px) {
+  .hero { padding: 72px 20px 52px; }
+  .hero-sub { max-width: 100%; }
+  .hero-tagline { gap: 10px; flex-wrap: wrap; }
+  .trust-strip { padding-bottom: 24px; }
+  .trust-strip .trust-secondary { white-space: normal; }
+  .trust-strip .trust-sep:first-of-type { display: inline; margin: 0 6px; }
+}
+
+.hero h1{white-space:nowrap}
+.hero .hero-sub{max-width:680px;margin-bottom:28px}
+.trust-strip{flex-direction:row;flex-wrap:wrap;justify-content:center}.trust-strip .trust-primary{width:100%;text-align:center}.trust-strip .trust-secondary{display:inline;white-space:nowrap}
+@media(max-width:768px){.hero h1{white-space:normal}.trust-strip .trust-secondary{white-space:normal}}
+</style>
+</head>
+<body>
+
+<div id="landing" class="page active">
+  <nav class="lnav">
+    <div class="lnav-logo">
+      <div class="lnav-logomark">W</div>
+      <div class="lnav-name">Wealth<span>OS</span></div>
+    </div>
+    <div class="lnav-links">
+      <a onclick="document.getElementById('features-section').scrollIntoView({behavior:'smooth'})">Features</a>
+      <a onclick="document.getElementById('pricing-section').scrollIntoView({behavior:'smooth'})">Pricing</a>
+      <a onclick="document.getElementById('about-section').scrollIntoView({behavior:'smooth'})">FAQ</a>
+    </div>
+    <div class="lnav-right">
+      <button class="lnav-signin" onclick="showAuth('login')">Sign In</button>
+      <button class="lnav-cta" onclick="showAuth('signup')">Get Started Free</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Live — AI-powered wealth intelligence platform
+    </div>
+    <h1>Your Entire Wealth.<br>One <span class="grad">Intelligent Dashboard.</span></h1>
+    <p class="hero-sub">The private wealth dashboard for investors managing real assets — stocks, property, crypto, and more. One number. Always accurate.</p>
+    <div class="hero-tagline">
+      <span class="hero-principle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>100% Private</span>
+      <span class="hero-principle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>AI-Powered</span>
+      <span class="hero-principle"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Free to Start</span>
+    </div>
+    <div class="hero-btns">
+      <button class="btn-primary-lg" onclick="showAuth('signup')">Get Started Free →</button>
+      <button class="btn-text-cta" onclick="document.getElementById('pricing-section').scrollIntoView({behavior:'smooth'})">View Pricing</button>
+    </div>
+    <div class="trust-strip">
+      <span class="trust-item trust-primary">Built for investors and professionals managing real wealth</span>
+      <span class="trust-sep">·</span>
+      <span class="trust-item trust-secondary">🔒 Your data never leaves your device</span>
+      <span class="trust-sep">·</span>
+      <span class="trust-item trust-secondary">Trusted by investors in 40+ countries</span>
+    </div>
+    <!-- Dashboard Preview -->
+    <div class="hero-preview">
+      <div class="preview-bar">
+        <div class="preview-dots"><div class="preview-dot" style="background:#ff5f57"></div><div class="preview-dot" style="background:#febc2e"></div><div class="preview-dot" style="background:#28c840"></div></div>
+        <div class="preview-title" style="font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:0.03em">WealthOS — Portfolio Overview</div>
+      </div>
+      <div class="preview-inner">
+        <div class="preview-card"><div class="pc-label">Net Worth</div><div class="pc-val green">$6.47M</div><div class="pc-sub up">↑ +$148k this month</div></div>
+        <div class="preview-card"><div class="pc-label">All-Time Return</div><div class="pc-val blue">+34.2%</div><div class="pc-sub up">↑ +$1.63M gain</div></div>
+        <div class="preview-card"><div class="pc-label">Best Asset</div><div class="pc-val gold">NVDA</div><div class="pc-sub up">↑ +127% return</div></div>
+        <div class="preview-card"><div class="pc-label">Goal Progress</div><div class="pc-val amber">64.7%</div><div class="pc-sub">to $10M target</div></div>
+      </div>
+      <div class="preview-bottom">
+        <div class="preview-alloc">
+          <div class="preview-alloc-item" style="background:#4d9fff;width:65px"></div>
+          <div class="preview-alloc-item" style="background:#00d4aa;width:105px"></div>
+          <div class="preview-alloc-item" style="background:#ffb347;width:36px"></div>
+          <div class="preview-alloc-item" style="background:#c9a96e;width:30px"></div>
+          <div class="preview-alloc-item" style="background:#7a9cc4;width:60px"></div>
+        </div>
+        <div class="preview-caption" style="font-family:var(--mono);font-size:10px;color:var(--muted)">Stocks · Real Estate · Crypto · Alt · Cash</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST LINE -->
+  <section class="trusted-section">
+    <p class="trusted-label">For investors who have outgrown spreadsheets.</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;margin-top:24px">
+      <div style="text-align:center"><div style="font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);letter-spacing:-1px">6</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Asset classes</div></div>
+      <div style="width:1px;height:36px;background:var(--border)"></div>
+      <div style="text-align:center"><div style="font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);letter-spacing:-1px">$0</div><div style="font-size:12px;color:var(--muted);margin-top:4px">To get started</div></div>
+      <div style="width:1px;height:36px;background:var(--border)"></div>
+      <div style="text-align:center"><div style="font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);letter-spacing:-1px">100%</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Private by default</div></div>
+      <div style="width:1px;height:36px;background:var(--border)"></div>
+      <div style="text-align:center"><div style="font-family:var(--mono);font-size:28px;font-weight:600;color:var(--text);letter-spacing:-1px">2 min</div><div style="font-size:12px;color:var(--muted);margin-top:4px">To your first view</div></div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features-section">
+    <div class="section-label">What It Does</div>
+    <h2 class="section-title">Intelligence, not just tracking.</h2>
+    <p class="section-sub">WealthOS doesn't just show you numbers. It tells you what they mean.</p>
+    <div class="feat-grid" style="grid-template-columns:repeat(2,1fr)">
+      <div class="feat-card">
+        <div class="feat-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+        <div class="feat-title">Unified net worth</div>
+        <div class="feat-desc">Six asset classes. One accurate number. Updates live.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <div class="feat-title">Portfolio intelligence</div>
+        <div class="feat-desc">Concentration risk, overexposure, and gaps — surfaced automatically on every session.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div class="feat-title">Wealth projection</div>
+        <div class="feat-desc">Three-scenario 10-year forecasts, calculated from your actual asset mix — not generic benchmarks.</div>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="feat-title">Private by default</div>
+        <div class="feat-desc">All data lives in your browser. No servers, no third parties, no breach surface.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how-section" style="padding-top:40px">
+    <div class="section-label">How It Works</div>
+    <h2 class="section-title">Up and running in minutes.</h2>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="how-num">01</div>
+        <div class="how-title">Add your assets</div>
+        <div class="how-desc">Name, value, cost basis. Any asset class. No bank connection needed.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">02</div>
+        <div class="how-title">See your net worth</div>
+        <div class="how-desc">Total wealth calculates immediately — broken down by class, allocation, and performance.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">03</div>
+        <div class="how-title">Intelligence runs automatically</div>
+        <div class="how-desc">Analysis, alerts, and projections run on every load. Nothing to configure.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing-section" style="padding-top:20px">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Simple, transparent pricing.</h2>
+    <p class="section-sub">Start free. Upgrade when your portfolio demands more.</p>
+    <div class="billing-toggle" id="billing-toggle">
+      <button class="billing-opt active" onclick="setBilling('monthly')" id="billing-monthly">Monthly</button>
+      <button class="billing-opt" onclick="setBilling('annual')" id="billing-annual">Annual <span class="billing-save">SAVE 20%</span></button>
+    </div>
+    <div class="price-grid" id="price-grid">
+      <div class="price-card">
+        <div class="price-plan">Free</div>
+        <div class="price-amount" id="price-free-amount">$0<span id="price-free-period">/mo</span></div>
+        <div class="price-per-year" id="price-free-year"></div>
+        <div class="price-desc">Try the platform. No credit card required.</div>
+        <ul class="price-features">
+          <li>Track up to 5 assets</li>
+          <li>All 6 asset classes</li>
+          <li>Live net worth dashboard</li>
+          <li>Basic allocation chart</li>
+        </ul>
+        <button class="price-btn" onclick="showAuth('signup')">Start Free</button>
+      </div>
+      <div class="price-card popular">
+        <div class="price-plan">Pro</div>
+        <div class="price-amount" id="price-pro-amount">$49<span id="price-pro-period">/mo</span></div>
+        <div class="price-per-year" id="price-pro-year"></div>
+        <div class="price-desc">The complete platform for serious investors.</div>
+        <ul class="price-features">
+          <li>Unlimited assets</li>
+          <li>Portfolio intelligence</li>
+          <li>Automated risk alerts</li>
+          <li>3-scenario wealth projection</li>
+          <li>Market intelligence feed</li>
+          <li>Quarterly wealth reports</li>
+          <li>JSON data export</li>
+        </ul>
+        <button class="price-btn" onclick="showAuth('signup')">Get Pro — $49/mo</button>
+      </div>
+      <div class="price-card">
+        <div class="price-plan">Private</div>
+        <div class="price-amount" id="price-priv-amount">$99<span id="price-priv-period">/mo</span></div>
+        <div class="price-per-year" id="price-priv-year"></div>
+        <div class="price-desc">For family offices and principal investors.</div>
+        <ul class="price-features">
+          <li>Everything in Pro</li>
+          <li>Portfolio stress testing</li>
+          <li>Multi-user access</li>
+          <li>Advisor sharing portal</li>
+          <li>PDF report export</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="price-btn" onclick="showAuth('signup')">Get Private — $99/mo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="about-section" style="padding-top:20px">
+    <div class="section-label">FAQ</div>
+    <h2 class="section-title" style="margin-bottom:36px">Frequently asked.</h2>
+    <div class="faq-list">
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Where is my data stored?<span class="faq-arrow">▼</span></div><div class="faq-a">Entirely in your browser, via localStorage. Nothing is sent to any server. We have zero access to your data — and neither does anyone else.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">What asset types are supported?<span class="faq-arrow">▼</span></div><div class="faq-a">Stocks, ETFs, real estate, cryptocurrency, art, watches, cash, and savings. WealthOS was built for multi-asset portfolios — not retrofitted from a stock tracker.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">What does Pro include beyond Free?<span class="faq-arrow">▼</span></div><div class="faq-a">Free tracks up to 5 assets with a basic dashboard. Pro removes that limit and adds AI intelligence, risk alerts, projections, market updates, quarterly reports, and data export. Private adds stress testing, multi-user access, and advisor sharing.</div></div>
+      <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-q">Does it connect to my brokerage or bank?<span class="faq-arrow">▼</span></div><div class="faq-a">No — values are entered manually. No account credentials ever required. Brokerage sync is on the roadmap.</div></div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta">
+    <div class="section-label" style="margin-bottom:24px">Ready when you are</div>
+    <h2>Your exact net worth.<br>Right now.</h2>
+    <p style="max-width:400px;margin:0 auto 36px">One dashboard. Every asset class. Portfolio intelligence included. Free to start.</p>
+    <button class="btn-primary-lg" onclick="showAuth('signup')">Get Started Free →</button>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#5C5FEF,#22D3A5);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:#fff">W</div>
+        <span style="font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.3px">Wealth<span style="color:var(--blue)">OS</span></span>
+      </div>
+      <div class="footer-links">
+        <a onclick="showAuth('login')">Sign In</a>
+        <a onclick="showAuth('signup')" style="color:var(--blue)">Get Started</a>
+        <a href="/pricing">Pricing</a>
+        <a href="/terms">Terms</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/refund">Refunds</a>
+      </div>
+      <div class="footer-copy">© 2026 WealthOS &nbsp;·&nbsp; Not financial advice</div>
+    </div>
+  </footer>
+</div>
+
+<div id="auth" class="page">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <div class="auth-logomark">W</div>
+      <div class="auth-logo-name">WealthOS</div>
+      <div class="auth-logo-sub">Your Personal Wealth Dashboard</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="auth-login">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="switchAuth('login')">Sign In</button>
+          <button class="auth-tab" onclick="switchAuth('signup')">Create Account</button>
+        </div>
+        <div class="auth-body">
+          <div class="auth-title">Welcome back</div>
+          <div class="auth-sub">Sign in to your WealthOS account.</div>
+          <div class="auth-error" id="login-error"></div>
+          <div class="auth-success" id="login-success"></div>
+          <div class="auth-fields">
+            <div class="auth-field"><label>Email Address</label><input type="email" id="login-email" placeholder="you@domain.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+            <div class="auth-field"><label>Password</label>
+              <div class="pw-wrap"><input type="password" id="login-pw" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"><button class="pw-eye" onclick="togglePw('login-pw',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+            </div>
+          </div>
+          <div class="auth-row">
+            <label class="auth-remember"><input type="checkbox" id="remember-me" checked> Remember me</label>
+            <button class="auth-forgot" onclick="switchAuth('forgot')">Forgot password?</button>
+          </div>
+          <button class="auth-submit" onclick="doLogin()">Sign In to Dashboard →</button>
+          <div class="auth-divider"><span>or</span></div>
+          <div class="auth-social">
+            <button class="auth-social-btn" onclick="doSocialAuth('google')"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+          </div>
+          <div class="auth-switch">No account? <a onclick="switchAuth('signup')">Create one free</a></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:18px"><button onclick="showLanding()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--sans)">← Back to homepage</button></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="auth-signup" style="display:none">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab" onclick="switchAuth('login')">Sign In</button>
+          <button class="auth-tab active" onclick="switchAuth('signup')">Create Account</button>
+        </div>
+        <div class="auth-body">
+          <div class="auth-title">Create your account</div>
+          <div class="auth-sub">Start tracking your full portfolio in under 2 minutes.</div>
+          <div class="auth-error" id="signup-error"></div>
+          <div class="auth-fields">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="auth-field"><label>First Name</label><input type="text" id="signup-fname" placeholder="Alex"></div>
+              <div class="auth-field"><label>Last Name</label><input type="text" id="signup-lname" placeholder="Morgan"></div>
+            </div>
+            <div class="auth-field"><label>Email Address</label><input type="email" id="signup-email" placeholder="you@domain.com"></div>
+            <div class="auth-field"><label>Password</label>
+              <div class="pw-wrap"><input type="password" id="signup-pw" placeholder="Min. 8 characters" oninput="checkStrength(this.value)"><button class="pw-eye" onclick="togglePw('signup-pw',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+              <div class="auth-strength"><div class="auth-strength-fill" id="pw-fill"></div></div>
+              <div class="auth-strength-label" id="pw-label">Enter a password</div>
+            </div>
+            <div class="auth-field"><label>Confirm Password</label>
+              <div class="pw-wrap"><input type="password" id="signup-pw2" placeholder="Repeat password"><button class="pw-eye" onclick="togglePw('signup-pw2',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+            </div>
+            <div class="auth-field"><label>Plan</label>
+              <select id="signup-plan"><option value="free">Free — Up to 5 assets</option><option value="pro" selected>Pro — Unlimited assets · $49/mo</option><option value="private">Private — Family office · $99/mo</option></select>
+            </div>
+          </div>
+          <div style="margin:14px 0 18px">
+            <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);cursor:pointer;line-height:1.5">
+              <input type="checkbox" id="signup-terms" style="margin-top:2px;accent-color:var(--blue);flex-shrink:0">
+              I agree to the <span style="color:var(--blue);margin:0 3px">Terms of Service</span> and Privacy Policy.
+            </label>
+            <div style="display:flex;align-items:center;gap:6px;padding:8px 0;color:var(--muted);font-size:11px;border-top:1px solid rgba(255,255,255,0.05);margin-top:8px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Your data is private and only accessible to you. Row Level Security enforced.</div>
+          </div>
+          <button class="auth-submit" onclick="doSignup()">Create Account →</button>
+          <div class="auth-divider"><span>or</span></div>
+          <div class="auth-social">
+            <button class="auth-social-btn" onclick="doSocialAuth('google')"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google</button>
+          </div>
+          <div class="auth-switch">Already have an account? <a onclick="switchAuth('login')">Sign in</a></div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:18px"><button onclick="showLanding()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--sans)">← Back to homepage</button></div>
+    </div>
+
+    <!-- FORGOT -->
+    <div id="auth-forgot" style="display:none">
+      <button class="auth-back-btn" onclick="switchAuth('login')">← Back to sign in</button>
+      <div class="auth-card">
+        <div class="auth-body">
+          <div class="auth-title">Reset password</div>
+          <div class="auth-sub">Enter your email and we'll show your reset link here.</div>
+          <div class="auth-error" id="forgot-error"></div>
+          <div class="auth-success" id="forgot-success"></div>
+          <div class="auth-fields" style="margin-bottom:20px">
+            <div class="auth-field"><label>Email Address</label><input type="email" id="forgot-email" placeholder="you@domain.com"></div>
+          </div>
+          <button class="auth-submit" id="forgot-submit" onclick="doForgot()">Send Reset Link →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP DASHBOARD
+══════════════════════════════════════ -->
+<div id="app" class="page">
+  <!-- TOP BAR -->
+  <div class="app-topbar">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="app-brand" onclick="showLanding()"><div class="app-brand-mark">W</div><div class="app-brand-name">WealthOS</div></div>
+    </div>
+    <div class="app-ticker">
+      <div class="tick-item"><span class="tick-sym">S&amp;P 500</span><span class="tick-up">5,234.18</span><span class="tick-up">+0.82%</span></div>
+      <div class="tick-item"><span class="tick-sym">NASDAQ</span><span class="tick-up">16,428.82</span><span class="tick-up">+1.14%</span></div>
+      <div class="tick-item"><span class="tick-sym">BTC</span><span class="tick-up">68,420</span><span class="tick-up">+2.31%</span></div>
+      <div class="tick-item"><span class="tick-sym">ETH</span><span class="tick-dn">3,481</span><span class="tick-dn">-0.44%</span></div>
+      <div class="tick-item"><span class="tick-sym">GOLD</span><span class="tick-up">2,312</span><span class="tick-up">+0.18%</span></div>
+      <div class="tick-item"><span class="tick-sym">10Y</span><span class="tick-dn">4.32%</span><span class="tick-dn">-0.03</span></div>
+    </div>
+    <div class="app-user-area">
+      <div class="app-live-badge">LIVE</div>
+      <button class="notif-btn" onclick="requestNotifications()" id="notif-btn" title="Enable alerts"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><div class="notif-dot" id="notif-dot"></div></button>
+      <div class="app-time" id="app-time">--:--</div>
+      <div class="app-avatar" id="app-avatar">J</div>
+      <div class="app-username" id="app-username">Loading</div>
+      <button class="app-logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-items-wrap">
+      <div class="sb-section">Portfolio</div>
+      <div class="sb-item active" onclick="nav('overview',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span> <span style="display:inline-flex;align-items:center;gap:3px;font-size:9px;font-family:var(--mono);color:var(--green);opacity:0.8;background:rgba(34,211,165,0.08);border:1px solid rgba(34,211,165,0.15);border-radius:4px;padding:1px 5px;margin-left:6px" title="Your data is private and only accessible to you"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>PRIVATE</span>Overview</div>
+      <div class="sb-item" onclick="nav('assets',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>All Assets<span class="sb-badge" id="sb-count">0</span></div>
+      <div class="sb-item" onclick="nav('timeline',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Net Worth</div>
+      <div class="sb-item" onclick="nav('history',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>History</div>
+      <div class="sb-div"></div>
+      <div class="sb-section">Asset Classes</div>
+      <div class="sb-item" onclick="nav('stocks',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>Stocks</div>
+      <div class="sb-item" onclick="nav('realestate',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Real Estate</div>
+      <div class="sb-item" onclick="nav('crypto',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg></span>Crypto</div>
+      <div class="sb-item" onclick="nav('alternatives',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 18 3 22 9 12 22 2 9"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="12" y1="22" x2="6" y2="9"/><line x1="12" y1="22" x2="18" y2="9"/></svg></span>Alternatives</div>
+      <div class="sb-item" onclick="nav('cash',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V7H4a2 2 0 0 1 0-4h16v4"/><path d="M20 7v14H4a2 2 0 0 1-2-2V5"/><circle cx="16" cy="14" r="1" fill="currentColor"/></svg></span>Cash</div>
+      <div class="sb-div"></div>
+      <div class="sb-div"></div>
+      <div class="sb-section">Intelligence</div>
+      <div class="sb-item" onclick="navIntelligence(this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>Intelligence</div>
+      <div class="sb-section">Reports</div>
+      <div class="sb-item" onclick="nav('report',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="18" y1="20" x2="18" y2="15"/><line x1="12" y1="20" x2="12" y2="12"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>Q1 Report</div>
+      <div class="sb-item" onclick="openShareModal()" id="sb-share-btn" style="color:var(--muted)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>Share</div>
+      <div class="sb-item" onclick="nav('settings',this)"><span class="sb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Settings</div>
+    </div>
+
+    <!-- MAIN -->
+      </div>
+    <div class="main">
+
+      <!-- PORTFOLIO SWITCHER -->
+      <div class="portfolio-switcher" id="portfolio-switcher" onclick="openPortfolioModal()" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        <span class="portfolio-name" id="active-portfolio-name">My Portfolio</span>
+        <svg class="portfolio-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <!-- OVERVIEW -->
+      <div id="v-overview" class="view active">
+      <!-- SKELETON (shown briefly on load) -->
+      <div id="ov-skeleton" style="display:none">
+        <div class="skel skel-card" style="height:110px;margin-bottom:16px"></div>
+        <div class="skel skel-card" style="height:60px;margin-bottom:16px"></div>
+        <div class="skel-grid">
+          <div class="skel skel-card"></div><div class="skel skel-card"></div>
+          <div class="skel skel-card"></div><div class="skel skel-card"></div>
+          <div class="skel skel-card"></div><div class="skel skel-card"></div>
+        </div>
+        <div class="skel skel-chart"></div>
+      </div>
+        <div id="asset-limit-banner" class="asset-limit-bar" style="display:none"></div>
+        <div class="ph">
+          <div class="ph-left"><h2>Portfolio Overview</h2><p id="overview-date">—</p></div>
+          <div class="ph-right" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span id="sync-status" style="font-size:11px;font-family:var(--mono);color:var(--green);opacity:0;transition:opacity 0.5s"></span>
+            <button id="sync-prices-btn" onclick="syncPrices(false)" style="background:rgba(34,211,165,0.08);border:1px solid rgba(34,211,165,0.25);border-radius:8px;padding:7px 14px;font-size:11px;font-weight:600;color:var(--green);cursor:pointer;font-family:var(--mono);transition:all 0.2s;white-space:nowrap" title="Fetch live prices for stocks and crypto">⟳ Sync Prices</button>
+          </div>
+          <div class="ph-right">
+            <button class="btn btn-g" onclick="openAddAsset()">+ Add Asset</button>
+            <button class="btn btn-p" onclick="navById('report')">Generate Report →</button>
+          </div>
+        </div>
+        <div class="nw-hero">
+          <div>
+            <div class="nw-label">Total Net Worth</div>
+            <div class="nw-amount" id="nw-total">$0</div>
+            <div class="nw-change"><span class="nw-change-val mc-up" id="nw-change">+$0</span><span class="nw-period">this month</span></div>
+          </div>
+          <div class="nw-stats">
+            <div><div class="nw-stat-label">All-Time Return</div><div class="nw-stat-val up" id="nw-return">+0%</div></div>
+            <div><div class="nw-stat-label">Total Assets</div><div class="nw-stat-val" id="nw-count">0</div></div>
+            <div><div class="nw-stat-label">Best Performer</div><div class="nw-stat-val up" id="nw-best">—</div></div>
+            <div><div class="nw-stat-label">Worst Performer</div><div class="nw-stat-val dn" id="nw-worst">—</div></div>
+          </div>
+        </div>
+        <div class="goal-bar-card">
+          <div class="goal-top">
+            <div><div class="goal-label">Target Net Worth</div><div class="goal-val" id="goal-val">$10,000,000</div></div>
+            <div style="text-align:right"><div class="goal-label">Progress</div><div class="goal-pct" id="goal-pct">0%</div></div>
+          </div>
+          <div class="goal-track"><div class="goal-fill" id="goal-fill" style="width:0%"></div></div>
+          <div class="goal-date-hint" id="goal-date-hint"></div>
+        </div>
+        <div class="metrics-grid" id="ov-metrics"></div>
+        <div class="g6040" style="margin-bottom:14px">
+          <div class="card">
+            <div class="card-h"><span class="card-title">Net Worth Trend</span><span style="font-family:var(--mono);font-size:10px;color:var(--muted)">12 months</span></div>
+            <div class="card-body"><div style="position:relative;height:220px"><canvas id="trend-chart"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="card-title">Allocation</span></div>
+            <div class="card-body" style="display:flex;gap:16px;align-items:center">
+              <div style="width:130px;height:130px;flex-shrink:0"><canvas id="alloc-chart"></canvas></div>
+              <div class="alloc-legend" id="alloc-legend"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h"><span class="card-title">Top Holdings</span><button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="navById('assets')">View All →</button></div>
+          <table><thead><tr><th>Asset</th><th>Type</th><th>Value</th><th>Return</th><th>Weight</th></tr></thead><tbody id="top-table"></tbody></table>
+        </div>
+        <!-- ═══ WEALTH INTELLIGENCE SECTION ═══ -->
+
+        <!-- 7: Daily Snapshot Bar -->
+        <div class="snapshot-card" id="wi-snapshot">
+          <div class="snap-item"><div class="snap-label">Net Worth</div><div class="snap-val" id="snap-nw">—</div></div>
+          <div class="snap-divider"></div>
+          <div class="snap-item"><div class="snap-label">Daily Change</div><div class="snap-val" id="snap-daily">—</div></div>
+          <div class="snap-divider"></div>
+          <div class="snap-item"><div class="snap-label">Largest Asset</div><div class="snap-val" id="snap-top">—</div></div>
+          <div class="snap-divider"></div>
+          <div class="snap-item"><div class="snap-label">Best Performer</div><div class="snap-val up" id="snap-best">—</div></div>
+          <div class="snap-divider"></div>
+          <div class="snap-item"><div class="snap-label">Risk Level</div><div class="snap-val" id="snap-risk">—</div></div>
+          <div class="snap-divider"></div>
+          <div class="snap-item"><div class="snap-label">Market Sentiment</div><div id="snap-sentiment"></div></div>
+        </div>
+        <div style="width:100%;font-size:10px;color:var(--muted2);font-family:var(--mono);margin-top:8px;letter-spacing:0.03em">For informational purposes only. Not financial advice.</div>
+
+        <!-- 1 & 2: Intelligence Header -->
+        <div class="wi-header wi-section">
+          <div class="wi-title">
+            <span class="wi-title-dot"></span>
+            AI Wealth Intelligence
+          </div>
+          <div class="wi-badge" style="color:var(--blue);background:rgba(92,95,239,0.08);border:1px solid rgba(92,95,239,0.15);border-radius:20px;padding:3px 10px;font-size:9px;font-weight:600;font-family:var(--mono);letter-spacing:0.08em">LIVE · AUTO-UPDATED</div>
+        </div>
+
+        <!-- 1: Portfolio Insights grid -->
+        <div class="intel-grid" id="wi-insight-grid"></div>
+
+        <!-- 2: Risk Alerts -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-h">
+            <span class="card-title">AI Risk Alerts</span>
+            <span id="wi-alert-count" style="font-family:var(--mono);font-size:9px;color:var(--muted)"></span>
+          </div>
+          <div class="card-body" style="padding:12px 16px" id="wi-alerts"></div>
+        </div>
+
+        <!-- 3 & 4: Market Intelligence (Pro+ feature) -->
+        <div class="wi-header wi-section">
+          <div class="wi-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            AI Market Intelligence
+          </div>
+          <div class="wi-badge" id="mi-plan-badge" style="color:var(--amber);background:rgba(232,160,48,0.08);border:1px solid rgba(232,160,48,0.15);border-radius:20px;padding:3px 10px;font-size:9px;font-weight:600;font-family:var(--mono);letter-spacing:0.08em">PRO</div>
+        </div>
+        <div id="wi-market-wrap">
+          <div class="market-grid" id="wi-market"></div>
+        </div>
+
+        <!-- 5: Panic Mode (Private feature) -->
+        <div class="wi-header wi-section" style="margin-top:4px">
+          <div class="wi-title">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            AI Panic Mode — Stress Test
+          </div>
+          <div id="panic-plan-badge" class="wi-badge">Private Feature</div>
+        </div>
+        <div id="wi-panic-wrap">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button class="panic-btn" onclick="runPanicMode()" id="panic-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Simulate -30% Market Drop
+            </button>
+            <span style="font-size:12px;color:var(--muted)">See your portfolio under worst-case conditions.</span>
+          </div>
+          <div class="panic-result" id="panic-result"></div>
+        </div>
+
+        <!-- 6: 3-Scenario Projection -->
+        <div class="card" style="margin-top:14px">
+          <div class="card-h">
+            <span class="card-title">Net Worth Projection</span>
+            <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">10-year · 3 scenarios</span>
+          </div>
+          <div class="card-body">
+            <div class="proj-scenarios" id="proj-scenarios"></div>
+            <div style="position:relative;height:160px"><canvas id="proj-chart"></canvas></div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--muted2);margin-top:10px">Scenarios based on asset-weighted growth rates. Not financial advice.</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- HISTORY VIEW -->
+      <div id="v-history" class="view">
+        <div class="ph"><div class="ph-left"><h2>Net Worth History</h2><p>Your wealth tracked over time</p></div>
+        <div class="ph-right">
+          <button class="email-summary-btn" onclick="generateWealthReport()" style="margin-right:6px" title="Generate PDF wealth report">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Report
+          </button>
+          <button class="email-summary-btn" onclick="sendEmailSummary()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email Summary
+          </button>
+        </div></div>
+        <div class="card">
+          <div class="card-h">
+            <span class="card-title">Net Worth Over Time</span>
+            <span style="font-family:var(--mono);font-size:9px;color:var(--muted2)" id="history-range"></span>
+          </div>
+          <div class="card-body">
+            <div class="history-period-btns" id="history-period-btns">
+              <button class="hpb" onclick="setHistoryPeriod(7)"  data-days="7">7D</button>
+              <button class="hpb active" onclick="setHistoryPeriod(30)" data-days="30">30D</button>
+              <button class="hpb" onclick="setHistoryPeriod(90)" data-days="90">90D</button>
+              <button class="hpb" onclick="setHistoryPeriod(365)" data-days="365">1Y</button>
+              <button class="hpb" onclick="setHistoryPeriod(0)"  data-days="0">ALL</button>
+            </div>
+            <div class="history-chart-wrap"><canvas id="history-chart"></canvas></div>
+            <div id="history-empty" class="history-empty" style="display:none">No history yet. Come back tomorrow — your first snapshot is saved automatically each day.</div>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="card">
+            <div class="card-h"><span class="card-title">Snapshots</span></div>
+            <div class="card-body" id="history-list" style="max-height:320px;overflow-y:auto"></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><span class="card-title">Key Stats</span></div>
+            <div class="card-body" id="history-stats"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALL ASSETS -->
+      <div id="v-assets" class="view">
+        <div class="ph"><div class="ph-left"><h2>All Assets</h2><p>Complete portfolio inventory</p></div><div class="ph-right"><button class="btn btn-g" onclick="openCSVModal()" style="margin-right:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-right:5px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import CSV</button><button class="btn btn-p" onclick="openAddAsset()">+ Add Asset</button></div></div>
+        <div class="search-wrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="search-input" id="asset-search" placeholder="Search assets by name, ticker, or location..." oninput="filterAssets(this.value)"></div>
+        <div class="card"><table><thead><tr><th>Asset</th><th>Category</th><th>Cost Basis</th><th>Current Value</th><th>Gain / Loss</th><th>Weight</th><th></th></tr></thead><tbody id="all-table"></tbody></table></div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div id="v-timeline" class="view">
+        <div class="ph"><div class="ph-left"><h2>Net Worth Timeline</h2><p>Historical wealth progression</p></div><div class="ph-right"><button class="btn btn-g" onclick="openMilestone()">+ Milestone</button></div></div>
+        <div class="card" style="margin-bottom:14px"><div class="card-h"><span class="card-title">Wealth Over Time</span></div><div class="card-body"><div style="position:relative;height:280px"><canvas id="nw-chart"></canvas></div></div></div>
+        <div class="g2">
+          <div class="card"><div class="card-h"><span class="card-title">Milestones</span><button class="btn btn-g" style="padding:4px 10px;font-size:10px" onclick="openMilestone()">+ Add</button></div><div class="card-body" id="milestones-list"></div></div>
+          <div class="card"><div class="card-h"><span class="card-title">By Asset Class</span></div><div class="card-body"><div style="position:relative;height:180px"><canvas id="class-chart"></canvas></div></div></div>
+        </div>
+      </div>
+
+      <!-- CATEGORY VIEWS -->
+      <div id="v-stocks" class="view"><div class="ph"><div class="ph-left"><h2 style="display:flex;align-items:center;gap:9px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg> Stocks &amp; Brokerage</h2><p>Equities portfolio</p></div><div class="ph-right"><button class="btn btn-p" onclick="openAddAsset('stock')">+ Add Position</button></div></div><div id="stocks-content"></div></div>
+      <div id="v-realestate" class="view"><div class="ph"><div class="ph-left"><h2 style="display:flex;align-items:center;gap:9px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Real Estate</h2><p>Property portfolio</p></div><div class="ph-right"><button class="btn btn-p" onclick="openAddAsset('real_estate')">+ Add Property</button></div></div><div id="realestate-content"></div></div>
+      <div id="v-crypto" class="view"><div class="ph"><div class="ph-left"><h2 style="display:flex;align-items:center;gap:9px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg> Crypto Assets</h2><p>Digital asset holdings</p></div><div class="ph-right"><button class="btn btn-p" onclick="openAddAsset('crypto')">+ Add Token</button></div></div><div id="crypto-content"></div></div>
+      <div id="v-alternatives" class="view"><div class="ph"><div class="ph-left"><h2 style="display:flex;align-items:center;gap:9px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 18 3 22 9 12 22 2 9"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="12" y1="22" x2="6" y2="9"/><line x1="12" y1="22" x2="18" y2="9"/></svg> Alternatives</h2><p>Art, watches, collectibles</p></div><div class="ph-right"><button class="btn btn-p" onclick="openAddAsset('art')">+ Add Item</button></div></div><div id="alternatives-content"></div></div>
+      <div id="v-cash" class="view"><div class="ph"><div class="ph-left"><h2 style="display:flex;align-items:center;gap:9px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V7H4a2 2 0 0 1 0-4h16v4"/><path d="M20 7v14H4a2 2 0 0 1-2-2V5"/><circle cx="16" cy="14" r="1" fill="currentColor"/></svg> Cash &amp; Savings</h2><p>Liquid assets and deposits</p></div><div class="ph-right"><button class="btn btn-p" onclick="openAddAsset('cash')">+ Add Account</button></div></div><div id="cash-content"></div></div>
+
+      <!-- REPORT -->
+      <div id="v-report" class="view">
+        <div class="ph"><div class="ph-left"><h2 id="report-title">Wealth Report</h2><p>Quarterly portfolio intelligence briefing</p></div><div class="ph-right"><button class="btn btn-p" onclick="window.print()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print</button></div></div>
+        <div class="card">
+          <div class="card-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+              <div><div style="font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px">PRIVATEWEALTH OS</div><div style="font-size:22px;font-weight:700;letter-spacing:-0.5px">Q1 2025 Portfolio Report</div><div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px">Generated: <span id="report-date">—</span></div></div>
+              <div style="text-align:right"><div style="font-family:var(--mono);font-size:9px;color:var(--muted2);letter-spacing:2px;margin-bottom:3px">NET WORTH</div><div style="font-family:var(--mono);font-size:30px;font-weight:600;color:var(--green)" id="report-nw">$0</div></div>
+            </div>
+            <div class="rpt-heading">Performance Summary</div><div class="rpt-stat-grid" id="report-stats"></div>
+            <div class="rpt-heading">Asset Allocation</div><div id="report-alloc" style="margin-bottom:22px"></div>
+            <div class="rpt-heading">Top Holdings</div><table style="margin-bottom:22px"><thead><tr><th>Asset</th><th>Value</th><th>Return</th><th>Weight</th></tr></thead><tbody id="report-table"></tbody></table>
+            <div class="rpt-heading">Risk Assessment</div><div id="report-risk" style="font-size:13px;color:var(--muted);line-height:1.8"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="v-settings" class="view">
+        <div class="ph"><div class="ph-left"><h2>Settings</h2><p>Profile and preferences</p></div></div>
+        <div class="g2">
+          
+        <div class="card" style="border-color:rgba(34,211,165,0.25)">
+          <div class="card-h">
+            <span class="card-title" style="display:flex;align-items:center;gap:8px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Data Privacy
+            </span>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;align-items:flex-start;gap:14px;padding:4px 0">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(34,211,165,0.1);border:1px solid rgba(34,211,165,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Your data is private and only accessible to you</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.6">All portfolio data is encrypted in transit and stored securely in your private database. Row Level Security ensures no other user can ever query, read, or modify your assets — even with direct database access. WealthOS never sells or shares your financial data.</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">
+              <div style="background:rgba(34,211,165,0.06);border:1px solid rgba(34,211,165,0.12);border-radius:7px;padding:10px;text-align:center">
+                <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:3px">ENCRYPTED</div>
+                <div style="font-size:10px;color:var(--muted)">In transit &amp; at rest</div>
+              </div>
+              <div style="background:rgba(34,211,165,0.06);border:1px solid rgba(34,211,165,0.12);border-radius:7px;padding:10px;text-align:center">
+                <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:3px">ROW LEVEL</div>
+                <div style="font-size:10px;color:var(--muted)">Security enforced</div>
+              </div>
+              <div style="background:rgba(34,211,165,0.06);border:1px solid rgba(34,211,165,0.12);border-radius:7px;padding:10px;text-align:center">
+                <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:3px">ZERO SHARING</div>
+                <div style="font-size:10px;color:var(--muted)">Never sold or shared</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+            <div class="card-h"><span class="card-title">Profile</span></div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="ff full"><label>Full Name</label><input id="s-name" placeholder="Alex Morgan"></div>
+                <div class="ff"><label>Risk Profile</label><select id="s-risk"><option>Conservative</option><option selected>Moderate</option><option>Aggressive</option></select></div>
+                <div class="ff"><label>Currency</label>
+                  <select id="s-currency" onchange="saveCurrencyLive()">
+                    <option value="USD">USD — US Dollar ($)</option>
+                    <option value="EUR">EUR — Euro (€)</option>
+                    <option value="GBP">GBP — British Pound (£)</option>
+                    <option value="AED">AED — UAE Dirham (د.إ)</option>
+                  </select>
+                </div>
+                <div class="ff full"><label>Target Net Worth</label><input id="s-goal" type="number" placeholder="10000000"></div>
+                
+              <div class="ff full">
+                <label>Anthropic API Key <span style="font-size:10px;color:var(--muted);font-weight:400">(optional override — AI works automatically)</span></label>
+                <div style="display:flex;gap:8px">
+                  <input id="s-apikey" type="password" placeholder="Pre-configured — paste your own key to override" style="flex:1" oninput="saveApiKey()">
+                  <button onclick="testApiKey()" style="padding:0 16px;background:rgba(92,95,239,0.1);border:1px solid rgba(92,95,239,0.2);border-radius:8px;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap">Test Key</button>
+                </div>
+                <div id="apikey-status" style="font-size:11px;margin-top:4px;font-family:var(--mono)"></div>
+              </div>
+              <div class="ff full">
+                <label>Appearance</label>
+                <div style="display:flex;gap:8px;margin-top:4px">
+                  <button id="theme-dark-btn" onclick="setTheme('dark')" style="flex:1;padding:9px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(92,95,239,0.12);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:7px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark</button>
+                  <button id="theme-light-btn" onclick="setTheme('light')" style="flex:1;padding:9px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:7px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>Light</button>
+                </div>
+              </div>
+                <div class="ff full"><button class="btn btn-p" style="width:100%" onclick="saveSettings()">Save Settings</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="card"><div class="card-h"><span class="card-title">Portfolio Stats</span></div><div class="card-body" id="settings-stats"></div></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="card-h"><span class="card-title">Export Data</span></div>
+          <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-g" id="export-btn" onclick="exportData()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export JSON</button>
+            <button class="btn btn-g" onclick="if(confirm('Reset to demo data? This will replace your current portfolio.')){assets=[];milestones=[];seedData();renderAll();}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.2"/></svg> Reset Demo Data</button>
+            <button style="background:rgba(240,92,113,0.08);border:1px solid rgba(240,92,113,0.15);color:var(--red);border-radius:4px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--mono)" onclick="if(confirm('Delete ALL portfolio data?')){if(currentUser){localStorage.removeItem('pw_assets_'+currentUser.id);localStorage.removeItem('pw_milestones_'+currentUser.id);}assets=[];milestones=[];saveData();renderAll()}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Clear All Data</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end main -->
+  </div><!-- end app-body -->
+</div><!-- end app -->
+
+
+<!-- ONBOARDING MODAL -->
+<div class="modal-overlay" id="onboarding-modal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-h" style="border-bottom:none;padding-bottom:0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#5C5FEF,#22D3A5);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700;color:#fff">W</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text)">Welcome to WealthOS</div>
+      </div>
+      <button class="modal-x" onclick="closeOnboarding()">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top:12px">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6">Add your first asset and you'll see your net worth in under 2 minutes. Here's where to start.</p>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:28px">
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:rgba(92,95,239,0.06);border:1px solid rgba(92,95,239,0.12);border-radius:12px">
+          <div style="width:32px;height:32px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;flex-shrink:0">1</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px">Add your first asset</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Stocks, real estate, crypto, art — add any asset class to start tracking your total net worth.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(92,95,239,0.15);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue);flex-shrink:0">2</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px">Set your wealth goal</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Go to Settings and set your target net worth. Watch your progress bar fill as you grow.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(92,95,239,0.15);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--blue);flex-shrink:0">3</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px">Track growth over time</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Add milestones to mark key moments in your wealth journey. Generate quarterly reports anytime.</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="closeOnboarding();openAddAsset()" style="flex:1;background:var(--blue);border:none;border-radius:9px;padding:12px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.18s">Add First Asset →</button>
+        <button onclick="closeOnboarding()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:9px;padding:12px 18px;font-size:14px;color:var(--muted);cursor:pointer;font-family:var(--sans)">Skip</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ADD ASSET MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-h"><div class="modal-title" id="add-modal-title">ADD ASSET</div><button class="modal-x" onclick="closeModal('add-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="ff full"><label>Asset Name</label><input id="a-name" placeholder="e.g. Apple Inc, NYC Apartment, Bitcoin"></div>
+        <div class="ff"><label>Category</label><select id="a-cat"><option value="stock">Stock / ETF</option><option value="real_estate">Real Estate</option><option value="crypto">Crypto</option><option value="art">Art</option><option value="watch">Watch / Jewellery</option><option value="cash">Cash / Savings</option><option value="other">◎ Other</option></select></div>
+        <div class="ff"><label>Ticker / Symbol</label><input id="a-ticker" placeholder="AAPL, BTC, —"></div>
+        <div class="ff"><label>Currency</label>
+          <select id="a-currency">
+            <option value="USD">USD — US Dollar ($)</option>
+            <option value="EUR">EUR — Euro (€)</option>
+            <option value="GBP">GBP — British Pound (£)</option>
+            <option value="AED">AED — UAE Dirham (د.إ)</option>
+          </select>
+        </div>
+        <div class="ff"><label>Cost Basis</label><input id="a-cost" type="number" placeholder="0.00"></div>
+        <div class="ff"><label>Current Value</label><input id="a-val" type="number" placeholder="0.00"></div>
+        <div class="ff"><label>Purchase Date</label><input id="a-date" type="date"></div>
+        <div class="ff"><label>Quantity</label><input id="a-qty" type="number" placeholder="1" value="1"></div>
+        <div class="ff"><label>Location / Broker</label><input id="a-loc" placeholder="Schwab, Coinbase, NYC..."></div>
+        <div class="ff full"><label>Notes</label><input id="a-notes" placeholder="Optional notes"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('add-modal')">Cancel</button><button class="btn-save" onclick="saveAsset()">Add to Portfolio</button></div>
+  </div>
+</div>
+
+<!-- MILESTONE MODAL -->
+<div class="modal-overlay" id="milestone-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-h"><div class="modal-title">ADD MILESTONE</div><button class="modal-x" onclick="closeModal('milestone-modal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="ff full"><label>Milestone</label><input id="m-title" placeholder="e.g. Sold startup, Bought apartment"></div>
+        <div class="ff full"><label>Date</label><input id="m-date" type="date"></div>
+        <div class="ff full"><label>Net Worth at Time ($)</label><input id="m-val" type="number" placeholder="0"></div>
+        <div class="ff full"><label>Type</label><select id="m-type"><option value="green">Positive</option><option value="blue">Neutral</option><option value="red">Negative</option><option value="gold">Achievement</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('milestone-modal')">Cancel</button><button class="btn-save" onclick="saveMilestone()">Add Milestone</button></div>
+  </div>
+</div>
+
+<!-- WAITLIST MODAL -->
+<div class="waitlist-modal" id="waitlist-modal">
+  <div class="waitlist-box">
+    <button class="waitlist-close" onclick="closeWaitlist()">✕</button>
+    <div class="waitlist-title">Join the Waitlist</div>
+    <div class="waitlist-sub">Be the first to know when WealthOS launches. No spam — just one email when we're ready.</div>
+    <div id="waitlist-form-wrap" style="transition:opacity 0.25s">
+      <div class="waitlist-field"><label>Your Name</label><input id="wl-name" placeholder="Alex Morgan" type="text"></div>
+      <div class="waitlist-field"><label>Email Address</label><input id="wl-email" placeholder="you@domain.com" type="email"></div>
+      <div id="wl-error" style="display:none;color:var(--red);font-size:12px;margin-bottom:8px;padding:8px 12px;background:rgba(240,92,113,0.08);border:1px solid rgba(240,92,113,0.2);border-radius:7px;transition:opacity 0.3s"></div>
+      <button class="waitlist-submit" onclick="submitWaitlist()">Join Waitlist →</button>
+    </div>
+    <div class="waitlist-success" id="waitlist-success" style="transition:opacity 0.3s;opacity:0;display:none"></div>
+    <div class="waitlist-count" id="waitlist-count">1,200+ people on the wai
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+
+<!-- CSV IMPORT MODAL -->
+<div class="csv-modal-overlay" id="csv-modal">
+  <div class="csv-box">
+    <div class="csv-header">
+      <div class="csv-title">Import Assets from CSV</div>
+      <button class="modal-x" onclick="closeCSVModal()">&#x2715;</button>
+    </div>
+    <div class="csv-body">
+      <div class="csv-drop" id="csv-drop" onclick="document.getElementById('csv-file-input').click()">
+        <div class="csv-drop-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="csv-drop-text">Drop a CSV file here or click to upload</div>
+        <div class="csv-drop-sub">Supports .csv and .txt files</div>
+        <input type="file" id="csv-file-input" accept=".csv,.txt" style="display:none" onchange="handleCSVFile(this)">
+      </div>
+      <div class="csv-template">Name, Category, Value, Cost, Ticker, Location<br>Apple Inc, stock, 247000, 180000, AAPL, Schwab<br>Manhattan Apt, real_estate, 2100000, 1800000, -, New York<br>Bitcoin, crypto, 85000, 42000, BTC, Coinbase</div>
+      <div class="csv-or">-- or paste CSV data below --</div>
+      <textarea class="csv-textarea" id="csv-textarea" placeholder="Name, Category, Value, Cost&#10;Apple Inc, stock, 247000, 180000" oninput="previewCSV()"></textarea>
+      <div class="csv-error" id="csv-error"></div>
+      <div class="csv-preview" id="csv-preview">
+        <div class="csv-preview-title">Preview (<span id="csv-preview-count">0</span> assets)</div>
+        <table class="csv-preview-table">
+          <thead><tr><th>Name</th><th>Category</th><th>Value</th><th>Cost</th></tr></thead>
+          <tbody id="csv-preview-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="csv-footer">
+      <button class="csv-cancel-btn" onclick="closeCSVModal()">Cancel</button>
+      <button class="csv-import-btn" id="csv-import-btn" onclick="importCSV()" disabled>Import Assets</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="share-modal-overlay" id="share-modal">
+  <div class="share-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="share-title">Share with Advisor</div>
+      <button class="modal-x" onclick="closeShareModal()">&#x2715;</button>
+    </div>
+    <div class="share-info">
+      <strong>Read-only access.</strong> Your advisor can view your portfolio but cannot edit or export your data. Link expires in 7 days.
+    </div>
+    <div class="share-desc">Copy this link and send it to your financial advisor.</div>
+    <div class="share-url-wrap">
+      <input class="share-url-input" id="share-url-input" readonly placeholder="Generating link...">
+      <button class="share-copy-btn" onclick="copyShareLink()">Copy Link</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="share-copy-btn" style="flex:1;background:rgba(92,95,239,0.12);border:1px solid rgba(92,95,239,0.25);color:var(--blue)" onclick="generateWealthReport()">📄 Download Report</button>
+      <button class="share-close-btn" style="flex:1" onclick="closeShareModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIGEST REMINDER BANNER -->
+<div id="digest-reminder" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:800;background:rgba(18,18,28,0.97);border:1px solid rgba(92,95,239,0.35);border-radius:12px;padding:14px 20px;align-items:center;gap:16px;box-shadow:0 8px 32px rgba(0,0,0,0.5);max-width:480px;width:calc(100% - 40px)">
+  <div style="flex:1">
+    <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px">📬 Your weekly digest is ready</div>
+    <div style="font-size:12px;color:var(--muted)">See your net worth, gains, and market performance in one email.</div>
+  </div>
+  <button onclick="sendEmailSummary()" style="background:var(--blue);border:none;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap">Send Digest</button>
+  <button onclick="document.getElementById('digest-reminder').style.display='none';localStorage.setItem('wos_last_digest',String(Date.now()))" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:18px;padding:0 4px;line-height:1">✕</button>
+</div>
+
+<!-- SHARE READ-ONLY BANNER -->
+<div class="share-read-only-banner" id="share-ro-banner">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+  <span class="share-ro-text">You are viewing a shared read-only portfolio.</span>
+</div>
+
+<!-- ONBOARDING TOUR -->
+<div class="tour-modal" id="tour-modal">
+  <div class="tour-box">
+    <div class="tour-progress"><div class="tour-progress-fill" id="tour-progress-fill" style="width:20%"></div></div>
+    <div class="tour-body">
+      <div class="tour-step-label" id="tour-step-label">Step 1 of 5</div>
+      <div class="tour-title" id="tour-title">Welcome to WealthOS</div>
+      <div class="tour-visual" id="tour-visual"></div>
+      <div class="tour-desc" id="tour-desc"></div>
+      <div class="tour-footer">
+        <div class="tour-dots" id="tour-dots"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="tour-skip-btn" onclick="closeTour()">Skip tour</button>
+          <button class="tour-next-btn" id="tour-next-btn" onclick="tourNext()">Next &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PWA INSTALL PROMPT -->
+<div class="pwa-prompt" id="pwa-prompt">
+  <div class="pwa-prompt-title">
+    <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#5C5FEF,#22D3A5);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;flex-shrink:0">W</div>
+    Add to Home Screen
+  </div>
+  <div class="pwa-prompt-sub">Install WealthOS as an app for faster access and offline use.</div>
+  <div class="pwa-prompt-btns">
+    <button class="pwa-install-btn" onclick="installPWA()">Install</button>
+    <button class="pwa-dismiss-btn" onclick="dismissPWA()">Not now</button>
+  </div>
+</div>
+
+<!-- PORTFOLIO MANAGER MODAL -->
+<div class="portfolio-modal-overlay" id="portfolio-modal">
+  <div class="portfolio-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:16px;font-weight:700;color:var(--text)">Portfolios</div>
+      <button class="modal-x" onclick="closePortfolioModal()">&#x2715;</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Switch between portfolios. Each is stored independently in your browser.</div>
+    <div class="portfolio-list" id="portfolio-list"></div>
+    <input class="portfolio-new-input" id="portfolio-new-name" placeholder="New portfolio name..." onkeydown="if(event.key==='Enter')createPortfolio()">
+    <button class="csv-import-btn" style="width:100%;margin-top:4px" onclick="createPortfolio()">+ Create Portfolio</button>
+  </div>
+</div>
+
+<!-- KEYBOARD SHORTCUTS MODAL -->
+<div class="kbd-overlay" id="kbd-overlay">
+  <div class="kbd-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="kbd-title">Keyboard Shortcuts</div>
+      <button class="modal-x" onclick="closeKbd()">&#x2715;</button>
+    </div>
+    <div class="kbd-grid">
+      <div class="kbd-row"><span class="kbd-label">Add new asset</span><span class="kbd-key"><span class="kbd-k">N</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Search assets</span><span class="kbd-key"><span class="kbd-k">S</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Go to Overview</span><span class="kbd-key"><span class="kbd-k">G</span> then <span class="kbd-k">O</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Go to All Assets</span><span class="kbd-key"><span class="kbd-k">G</span> then <span class="kbd-k">A</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Go to History</span><span class="kbd-key"><span class="kbd-k">G</span> then <span class="kbd-k">H</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Open AI Chat</span><span class="kbd-key"><span class="kbd-k">C</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Generate Report</span><span class="kbd-key"><span class="kbd-k">R</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Show shortcuts</span><span class="kbd-key"><span class="kbd-k">?</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Close anything</span><span class="kbd-key"><span class="kbd-k">Esc</span></span></div>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:var(--muted2);font-family:var(--mono)">Shortcuts active when no input is focused</div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- AI CHAT FAB + PANEL -->
+<button class="chat-fab" id="chat-fab" onclick="openChat()" title="Ask about your portfolio">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <div class="chat-ai-dot"></div>
+      <div><div class="chat-title">WealthOS AI</div><div class="chat-subtitle">Your personal portfolio intelligence</div></div>
+    </div>
+    <button class="chat-close" onclick="closeChat()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-msg ai">
+      <div class="chat-avatar">W</div>
+      <div class="chat-bubble">Hi! I can analyse your portfolio and answer questions about your wealth. What would you like to know?</div>
+    </div>
+  </div>
+  <div class="chat-suggestions" id="chat-suggestions">
+    <button class="chat-suggestion" onclick="askChat(this.textContent)">What is my biggest risk?</button>
+    <button class="chat-suggestion" onclick="askChat(this.textContent)">Am I well diversified?</button>
+    <button class="chat-suggestion" onclick="askChat(this.textContent)">When will I hit my goal?</button>
+  </div>
+  <div class="chat-input-wrap">
+    <input class="chat-input" id="chat-input" placeholder="Ask about your portfolio..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
+    <button class="chat-send" id="chat-send" onclick="sendChat()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

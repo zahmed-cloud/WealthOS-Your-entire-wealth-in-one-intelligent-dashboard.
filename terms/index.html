@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0A0A0F;--surface:#141419;--surface2:#1A1A24;
+  --border:#242430;--border2:#2E2E3E;
+  --text:#F2F2FA;--muted:#8A8FAF;--muted2:#636382;
+  --blue:#5C5FEF;--green:#22D3A5;--red:#F05C71;--amber:#E8A030;
+  --sans:"IBM Plex Sans",sans-serif;--mono:"IBM Plex Mono",monospace
+}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--border);background:rgba(10,10,15,.92);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logomark{width:32px;height:32px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0}
+.logoname{font-size:16px;font-weight:700;color:var(--text)}.logoname span{color:var(--muted)}
+.nav-links{display:flex;gap:24px;align-items:center}
+.nav-link{color:var(--muted);font-size:14px;transition:color .15s}.nav-link:hover{color:var(--text);text-decoration:none}
+.btn{display:inline-block;padding:9px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:var(--sans)}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#4a4dcc;text-decoration:none}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}.btn-outline:hover{border-color:var(--blue);color:var(--blue);text-decoration:none}
+.container{max-width:860px;margin:0 auto;padding:64px 24px}
+h1{font-size:38px;font-weight:700;letter-spacing:-.6px;line-height:1.2;margin-bottom:14px}
+h2{font-size:19px;font-weight:600;color:var(--text);margin:40px 0 10px}
+h3{font-size:14px;font-weight:600;color:var(--text);margin:18px 0 5px}
+p{color:var(--muted);margin-bottom:14px}
+ul,ol{padding-left:20px;margin-bottom:14px}
+li{color:var(--muted);margin-bottom:5px}
+strong{color:var(--text);font-weight:600}
+.subtitle{font-size:17px;color:var(--muted);margin-bottom:40px}
+hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.tag{display:inline-block;font-size:11px;font-weight:600;font-family:var(--mono);letter-spacing:.07em;padding:3px 9px;border-radius:4px;margin-bottom:14px;text-transform:uppercase}
+.tag-green{background:rgba(34,211,165,.1);color:var(--green)}
+.tag-blue{background:rgba(92,95,239,.1);color:var(--blue)}
+.tag-amber{background:rgba(232,160,48,.1);color:var(--amber)}
+footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;gap:20px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap}
+.footer-links a,.footer-copy{font-size:13px;color:var(--muted2)}.footer-links a:hover{color:var(--text)}
+@media(max-width:600px){nav{padding:14px 20px;flex-wrap:wrap;gap:12px}.container{padding:40px 20px}h1{font-size:27px}footer{padding:24px 20px;flex-direction:column;align-items:flex-start}}
+</style>
+<title>Terms of Service — WealthOS</title>
+</head>
+<body><nav>
+  <a class="logo" href="/">
+    <div class="logomark">W</div>
+    <div class="logoname">Wealth<span>OS</span></div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="/pricing">Pricing</a>
+    <a class="nav-link" href="/">Dashboard</a>
+    <a class="btn btn-primary" href="/">Get Started Free</a>
+  </div>
+</nav>
+<div class="container">
+  <span class="tag tag-blue">Legal</span>
+  <h1>Terms of Service</h1>
+  <p class="subtitle">Last updated: 19 March 2026</p>
+
+  <p>These Terms of Service ("Terms") govern your use of WealthOS, a personal wealth intelligence platform operated by WealthOS ("we", "us", "our"). By creating an account or using the service, you agree to these Terms.</p>
+
+  <hr>
+
+  <h2>1. About WealthOS</h2>
+  <p>WealthOS is a software-as-a-service (SaaS) platform that enables individuals to track, organise, and analyse their personal wealth across multiple asset classes. WealthOS is a financial tracking tool, not a regulated financial adviser. Nothing in the platform constitutes investment, legal, or tax advice.</p>
+
+  <h2>2. Your Account</h2>
+  <ul>
+    <li>You must be at least 18 years old to create an account.</li>
+    <li>You are responsible for maintaining the security of your login credentials.</li>
+    <li>One account per person. You may not share or transfer accounts.</li>
+    <li>You must provide accurate information during registration.</li>
+    <li>You are responsible for all activity that occurs under your account.</li>
+  </ul>
+
+  <h2>3. Acceptable Use</h2>
+  <p>You agree not to:</p>
+  <ul>
+    <li>Use WealthOS for any unlawful purpose.</li>
+    <li>Attempt to access other users' data or accounts.</li>
+    <li>Reverse-engineer, scrape, or exploit the platform.</li>
+    <li>Upload harmful, fraudulent, or misleading content.</li>
+    <li>Resell or sublicense access to WealthOS.</li>
+  </ul>
+
+  <h2>4. Subscriptions &amp; Billing</h2>
+  <ul>
+    <li>Paid plans (Pro and Private) are billed monthly in advance.</li>
+    <li>Subscriptions automatically renew unless cancelled before the next billing date.</li>
+    <li>Prices are displayed in USD and may be subject to applicable taxes.</li>
+    <li>You can cancel at any time from your account settings. Cancellation takes effect at the end of the current billing period.</li>
+    <li>Payments are processed by Stripe. We do not store your card details.</li>
+  </ul>
+
+  <h2>5. Free Plan</h2>
+  <p>The free plan is provided as-is with no guarantee of availability. We reserve the right to modify or discontinue free plan features at any time with reasonable notice.</p>
+
+  <h2>6. Intellectual Property</h2>
+  <p>WealthOS and its content, features, and functionality are owned by WealthOS and protected by applicable intellectual property laws. You retain ownership of any data you enter into the platform.</p>
+
+  <h2>7. Data &amp; Privacy</h2>
+  <p>Your use of WealthOS is also governed by our <a href="/privacy">Privacy Policy</a>, which is incorporated into these Terms by reference.</p>
+
+  <h2>8. Limitation of Liability</h2>
+  <p>WealthOS is provided "as is" without warranties of any kind. To the maximum extent permitted by law, WealthOS shall not be liable for any indirect, incidental, or consequential damages arising from your use of the platform. Our total liability shall not exceed the amount you paid us in the three months preceding any claim.</p>
+
+  <h2>9. Termination</h2>
+  <ul>
+    <li>You may delete your account at any time from account settings.</li>
+    <li>We reserve the right to suspend or terminate accounts that violate these Terms.</li>
+    <li>Upon termination, your data may be deleted in accordance with our Privacy Policy.</li>
+  </ul>
+
+  <h2>10. Changes to These Terms</h2>
+  <p>We may update these Terms from time to time. We will notify you by email or in-app notice for material changes. Continued use of WealthOS after changes constitutes acceptance of the updated Terms.</p>
+
+  <h2>11. Contact</h2>
+  <p>For questions about these Terms, contact us at <a href="/cdn-cgi/l/email-protection#573b3230363b172032363b233f382479362727"><span class="__cf_email__" data-cfemail="1f737a787e735f687a7e736b77706c317e6f6f">[email&#160;protected]</span></a>.</p>
+</div>
+<footer>
+  <span class="footer-copy">&copy; 2026 WealthOS. All rights reserved.</span>
+  <div class="footer-links">
+    <a href="/pricing">Pricing</a>
