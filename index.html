@@ -732,7 +732,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{
 .billing-save{display:inline-block;background:rgba(34,211,165,0.12);border:1px solid rgba(34,211,165,0.25);color:var(--green);font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:0.1em;border-radius:20px;padding:2px 8px;margin-left:6px;vertical-align:middle}
 .price-per-year{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px;min-height:16px;transition:all 0.2s}
 
-EATURE 3: ONBOARDING TOUR
+/* ══════════════════════════════════════════════
+FEATURE 3: ONBOARDING TOUR
 ══════════════════════════════════════════════ */
 .tour-modal{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;background:rgba(10,10,15,0.8);backdrop-filter:blur(8px);padding:20px}
 .tour-modal.show{display:flex;animation:fadeIn 0.22s ease}
@@ -2497,6 +2498,9 @@ body.light-mode .kbd-box{background:#fff}
     </button>
   </div>
 </div>
+
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script>try { Paddle.Initialize({ token: 'live_3cf9cb8c888d0e55c50ef2212cd' }); } catch(e) { console.warn('Paddle loading...'); }</script>
 
 <script src="script.js"></script>
 

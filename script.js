@@ -1272,6 +1272,90 @@ function goPricing() {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   }, 300);
 }
+
+// ============================================
+// PADDLE PAYMENT INTEGRATION
+// ============================================
+// Config: Set your Paddle Price IDs here after creating products in Paddle dashboard
+var PADDLE_CONFIG = {
+  proPriceId:     'pri_01kmjb2sm39eqqybcdzqbt45rh',
+  privatePriceId: 'pri_01kmjb5rsd19dqga99vcxmegda',
+  environment:    'production'
+};
+
+function startPaddleCheckout(plan) {
+  if (!currentUser) { showAuth('login'); return; }
+
+  var priceId = plan === 'private' ? PADDLE_CONFIG.privatePriceId : PADDLE_CONFIG.proPriceId;
+  if (!priceId) {
+    _showToast('Payment system is being configured. Please try again shortly.', 'warn');
+    console.warn('[WealthOS] Paddle price ID not set for plan:', plan);
+    return;
+  }
+
+  if (typeof Paddle === 'undefined') {
+    _showToast('Payment system is loading. Please try again.', 'warn');
+    console.warn('[WealthOS] Paddle.js not loaded');
+    return;
+  }
+
+  try {
+    Paddle.Checkout.open({
+      items: [{ priceId: priceId, quantity: 1 }],
+      customer: { email: currentUser.email },
+      customData: {
+        userId: currentUser.id,
+        supabaseId: currentUser.supabaseId || '',
+        email: currentUser.email
+      },
+      settings: {
+        successUrl: window.location.origin + window.location.pathname + '?upgraded=1',
+        allowLogout: false,
+        displayMode: 'overlay',
+        theme: 'dark'
+      }
+    });
+    console.log('[WealthOS] Paddle checkout opened for:', plan);
+  } catch(e) {
+    console.error('[WealthOS] Paddle checkout error:', e);
+    _showToast('Could not open checkout. Please try again.', 'error');
+  }
+}
+
+function refreshUserPlan() {
+  // Re-read plan from Supabase (trusted source - set by webhook)
+  var _sb = getSB();
+  if (!_sb || !currentUser) return;
+  _sb.auth.getUser().then(function(res) {
+    if (!res.data || !res.data.user) return;
+    var meta = res.data.user.user_metadata || {};
+    if (meta.plan && meta.plan !== currentUser.plan) {
+      console.log('[WealthOS] Plan updated:', currentUser.plan, '->', meta.plan);
+      currentUser.plan = meta.plan;
+      settings.plan = meta.plan;
+      saveSession(currentUser);
+      saveUsers();
+      saveData();
+      renderAll();
+      _showToast('Plan upgraded to ' + meta.plan.charAt(0).toUpperCase() + meta.plan.slice(1) + '!', 'success');
+    }
+  }).catch(function(e) { console.warn('[WealthOS] Plan refresh failed:', e); });
+}
+
+// Check for upgrade return from Paddle
+(function() {
+  try {
+    if (window.location.search.indexOf('upgraded=1') >= 0) {
+      // Remove query param
+      var clean = window.location.pathname;
+      window.history.replaceState({}, '', clean);
+      // Refresh plan from Supabase after short delay (webhook may still be processing)
+      setTimeout(refreshUserPlan, 2000);
+      setTimeout(refreshUserPlan, 5000);
+      setTimeout(refreshUserPlan, 10000);
+    }
+  } catch(e) {}
+})();
 function showUpgradeInsights() {
   showUpgradePrompt('Portfolio Intelligence', 'Upgrade to Pro to unlock all six insight cards -- allocation analysis, concentration risk, equity weight, crypto exposure, gain summary and cash review. From $49/mo.');
 }
@@ -1400,9 +1484,13 @@ function doLogin() {
           users.push(localUser); saveUsers();
         }
         if (!localUser.supabaseId) { localUser.supabaseId = sbUser.id; saveUsers(); }
+        // Read plan from Supabase metadata (trusted source)
+        if (sbUser.user_metadata && sbUser.user_metadata.plan) {
+          localUser.plan = sbUser.user_metadata.plan;
+          saveUsers();
+        }
         saveSession(localUser);
-        suc.textContent = 'Welcome back, ' + (localUser.firstName || 'User') + '!';
-        suc.style.display = 'block';
+        if (suc) { suc.textContent = 'Welcome back, ' + (localUser.firstName || 'User') + '!'; suc.style.display = 'block'; }
         setTimeout(function() { enterDashboard(); }, 600);
       })
       .catch(function() {
@@ -1436,6 +1524,7 @@ function doSignup() {
   var plan  = 'free'; // All new users start on free plan (upgrade via payment)
   var terms = (document.getElementById('signup-terms') || {}).checked || false;
   var err   = document.getElementById('signup-error');
+  var btn   = document.querySelector('#auth-signup .auth-submit');
   fname = fname.trim(); lname = lname.trim();
   email = email.trim().toLowerCase();
   if (err) err.style.display = 'none';
@@ -1443,22 +1532,18 @@ function doSignup() {
   if (pw.length < 8)           { showErr(err, 'Password must be at least 8 characters.'); return; }
   if (pw !== pw2)              { showErr(err, 'Passwords do not match.'); return; }
   if (!terms)                  { showErr(err, 'Please accept the terms of service.'); return; }
+  // Check local duplicate
   if (users.find(function(x) { return x.email === email; })) {
-    showErr(err, 'An account with this email already exists.'); return;
+    showErr(err, 'An account with this email already exists. Please sign in instead.'); return;
   }
-  var u = {
-    id: 'u_' + Date.now(),
-    firstName: fname, lastName: lname, email: email,
-    password: btoa(pw), plan: plan, createdAt: new Date().toISOString()
-  };
-  u._newUser = true;
-  users.push(u);
-  saveUsers();
-  saveSession(u);
 
-  // -- Supabase: create cloud account --
+  // Show loading state
+  var origBtnText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Creating account...'; }
+
   var _sb = getSB();
   if (_sb) {
+    // Supabase-first: create cloud account, THEN create local user on success
     var emailRedirectTo = window.location.origin + window.location.pathname;
     _sb.auth.signUp({ email: email, password: pw,
       options: {
@@ -1467,53 +1552,64 @@ function doSignup() {
       }
     }).then(function(res) {
       if (res.error) {
-        var errMsg = res.error.message || '';
-        var isDup = errMsg.toLowerCase().indexOf('already registered') >= 0 ||
-                    errMsg.toLowerCase().indexOf('already exists') >= 0 ||
-                    (res.error.code && res.error.code === 'user_already_exists');
-        if (isDup) {
-          users = users.filter(function(x) { return x.id !== u.id; });
-          saveUsers(); clearSession();
-          var errEl2 = document.getElementById('signup-error');
-          if (errEl2) { errEl2.textContent = 'An account with this email already exists. Please sign in instead.'; errEl2.style.display = 'block'; }
-          showPage('auth'); switchAuth('login');
-          var loginEmailEl = document.getElementById('login-email');
-          if (loginEmailEl) loginEmailEl.value = email;
-          return;
+        if (btn) { btn.disabled = false; btn.textContent = origBtnText; }
+        var errMsg = (res.error.message || '').toLowerCase();
+        if (errMsg.indexOf('already registered') >= 0 || errMsg.indexOf('already exists') >= 0 ||
+            (res.error.code && res.error.code === 'user_already_exists')) {
+          showErr(err, 'An account with this email already exists. Please sign in instead.');
+          // Auto-switch to login with email pre-filled
+          setTimeout(function() {
+            switchAuth('login');
+            var loginEmailEl = document.getElementById('login-email');
+            if (loginEmailEl) loginEmailEl.value = email;
+          }, 1500);
+        } else {
+          showErr(err, res.error.message || 'Signup failed. Please try again.');
         }
+        return;
       }
-      if (res.data && res.data.user) {
-        u.supabaseId = res.data.user.id;
-        saveUsers(); saveSession(u);
-      }
-    }).catch(function() {});
-  }
 
-  // Show email confirmation notice if Supabase is active
-  var _sbCheck = getSB();
-  if (_sbCheck) {
-    // Supabase sends a confirmation email -- let user know
-    setTimeout(function() {
+      // Supabase succeeded - now create local user
+      var u = {
+        id: 'u_' + Date.now(),
+        firstName: fname, lastName: lname, email: email,
+        password: btoa(pw), plan: plan, createdAt: new Date().toISOString()
+      };
+      if (res.data && res.data.user) u.supabaseId = res.data.user.id;
+      u._newUser = true;
+      users.push(u);
+      saveUsers();
+      saveSession(u);
+      if (btn) { btn.disabled = false; btn.textContent = origBtnText; }
+
+      // Enter dashboard
       enterDashboard();
       setTimeout(function() {
-        // Show friendly notice about email confirmation
-        var notice = document.createElement('div');
-        notice.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);background:#1A1A26;border:1px solid #22D3A5;color:#22D3A5;padding:12px 20px;border-radius:10px;font-size:13px;z-index:9999;text-align:center;max-width:420px;box-shadow:0 8px 24px rgba(0,0,0,0.4)';
-        notice.innerHTML = '\u2713 Account created! Check your email to confirm your address.';
-        document.body.appendChild(notice);
-        setTimeout(function() { notice.style.opacity='0'; notice.style.transition='opacity 0.5s'; setTimeout(function(){notice.remove();},600); }, 5000);
+        _showToast('Account created! Check your email to confirm.', 'success');
         if (!localStorage.getItem('pw_tour_done_'+u.id)) startTour();
         else if (!localStorage.getItem('pw_onboarded_'+u.id)) showOnboarding();
       }, 700);
-    }, 300);
+    }).catch(function(e) {
+      if (btn) { btn.disabled = false; btn.textContent = origBtnText; }
+      showErr(err, 'Network error. Please check your connection and try again.');
+    });
   } else {
-    setTimeout(function() {
-      enterDashboard();
-      setTimeout(function(){
-        if (!localStorage.getItem('pw_tour_done_'+u.id)) startTour();
-        else if (!localStorage.getItem('pw_onboarded_'+u.id)) showOnboarding();
-      }, 700);
-    }, 300);
+    // No Supabase - local-only signup (offline mode)
+    var u = {
+      id: 'u_' + Date.now(),
+      firstName: fname, lastName: lname, email: email,
+      password: btoa(pw), plan: plan, createdAt: new Date().toISOString()
+    };
+    u._newUser = true;
+    users.push(u);
+    saveUsers();
+    saveSession(u);
+    if (btn) { btn.disabled = false; btn.textContent = origBtnText; }
+    enterDashboard();
+    setTimeout(function(){
+      if (!localStorage.getItem('pw_tour_done_'+u.id)) startTour();
+      else if (!localStorage.getItem('pw_onboarded_'+u.id)) showOnboarding();
+    }, 700);
   }
 }
 
@@ -3992,7 +4088,7 @@ function showUpgradePrompt(title, desc) {
           '<div style="display:flex;flex-direction:column;gap:7px">' + featureHTML + '</div>' +
         '</div>' +
         '<div style="display:flex;gap:9px">' +
-          '<button onclick="goPricing()" style="flex:1;background:var(--blue);border:none;border-radius:9px;padding:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.18s">Upgrade to Pro &#x2192;</button>' +
+          '<button onclick="closeUpgradePrompt();startPaddleCheckout(\'pro\')" style="flex:1;background:var(--blue);border:none;border-radius:9px;padding:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.18s">Upgrade to Pro &#x2192;</button>' +
           '<button onclick="closeUpgradePrompt()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:9px;padding:12px 16px;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--sans)">Later</button>' +
         '</div>' +
       '</div>' +
@@ -4210,10 +4306,14 @@ function renderTourStep() {
 // FEATURE 4: PLAN SELECTOR
 // ==========================================================
 function selectPlan(plan, el) {
-  // Update hidden input
+  // If user is logged in and selecting a paid plan, trigger Paddle checkout
+  if (currentUser && (plan === 'pro' || plan === 'private')) {
+    startPaddleCheckout(plan);
+    return;
+  }
+  // Otherwise just update the visual selection (signup flow)
   var hidden = document.getElementById('signup-plan');
   if (hidden) hidden.value = plan;
-  // Update visual selection
   document.querySelectorAll('.plan-opt').forEach(function(opt) {
     opt.classList.remove('selected');
   });
@@ -4692,6 +4792,11 @@ function checkShareParam() {
         }
         // Update supabaseId in case it was missing
         if (!localUser.supabaseId) { localUser.supabaseId = sbUser.id; saveUsers(); }
+        // Sync plan from Supabase metadata (trusted source - set by webhook)
+        if (sbUser.user_metadata && sbUser.user_metadata.plan) {
+          localUser.plan = sbUser.user_metadata.plan;
+          saveUsers();
+        }
         saveSession(localUser);
         currentUser = localUser;
         enterDashboard();
