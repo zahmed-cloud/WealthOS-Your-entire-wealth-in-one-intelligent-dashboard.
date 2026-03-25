@@ -1641,32 +1641,49 @@ function doForgot() {
   }
 }
 
-function doSocialAuth(provider) {
+function doResetPassword() {
+  var newPw = (document.getElementById('reset-pw-new') || {}).value || '';
+  var confirmPw = (document.getElementById('reset-pw-confirm') || {}).value || '';
+  var errEl = document.getElementById('reset-pw-error');
+  var sucEl = document.getElementById('reset-pw-success');
+  var btn = document.getElementById('reset-pw-submit');
+  if (errEl) errEl.style.display = 'none';
+  if (sucEl) sucEl.style.display = 'none';
+
+  if (!newPw || !confirmPw) { showErr(errEl, 'Please fill in both fields.'); return; }
+  if (newPw.length < 8) { showErr(errEl, 'Password must be at least 8 characters.'); return; }
+  if (newPw !== confirmPw) { showErr(errEl, 'Passwords do not match.'); return; }
+
   var _sb = getSB();
-  if (!_sb) {
-    // Supabase not loaded - show error
-    var err = document.getElementById('login-error') || document.getElementById('signup-error');
-    if (err) { err.textContent = 'Authentication service is loading. Please try again.'; err.style.display = 'block'; }
-    return;
-  }
-  // Use Supabase OAuth
-  var redirectUrl = window.location.origin + window.location.pathname;
-  _sb.auth.signInWithOAuth({
-    provider: provider,
-    options: { redirectTo: redirectUrl }
-  }).then(function(res) {
+  if (!_sb) { showErr(errEl, 'Authentication service unavailable. Please try again.'); return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Updating...'; }
+
+  _sb.auth.updateUser({ password: newPw }).then(function(res) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Update Password \u2192'; }
     if (res.error) {
-      console.error('[WealthOS] OAuth error:', res.error);
-      var err = document.getElementById('login-error') || document.getElementById('signup-error');
-      if (err) { err.textContent = 'Google sign-in failed. Please try again.'; err.style.display = 'block'; }
+      showErr(errEl, res.error.message || 'Could not update password. Please try again.');
+    } else {
+      if (sucEl) { sucEl.textContent = '\u2713 Password updated successfully! Redirecting...'; sucEl.style.display = 'block'; }
+      // Update local password if user exists locally
+      if (currentUser) {
+        try { currentUser.password = btoa(newPw); saveUsers(); } catch(e) {}
+      }
+      setTimeout(function() {
+        enterDashboard();
+        _showToast('Password updated successfully!', 'success');
+      }, 1500);
     }
-    // On success, Supabase redirects to Google, then back to redirectUrl
-    // init() handles the callback on page load
   }).catch(function(e) {
-    console.error('[WealthOS] OAuth error:', e);
-    var err = document.getElementById('login-error') || document.getElementById('signup-error');
-    if (err) { err.textContent = 'Could not connect to Google. Check your connection.'; err.style.display = 'block'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Update Password \u2192'; }
+    showErr(errEl, 'Network error. Please check your connection.');
   });
+}
+
+function doSocialAuth(provider) {
+  // Google OAuth removed for launch stability. Email/password only.
+  console.log('[WealthOS] Social auth disabled');
+  _showToast('Please sign in with email and password.', 'info');
 }
 
 function doLogout() {
@@ -2320,7 +2337,7 @@ document.addEventListener('click', function(e) {
 // AUTH UI
 // ==============================================
 function switchAuth(mode) {
-  var views = {login: 'auth-login', signup: 'auth-signup', forgot: 'auth-forgot'};
+  var views = {login: 'auth-login', signup: 'auth-signup', forgot: 'auth-forgot', 'reset-pw': 'auth-reset-pw'};
   Object.keys(views).forEach(function(k) {
     var el = safeGet(views[k]);
     if (el) el.style.display = (k === mode) ? 'block' : 'none';
@@ -4733,7 +4750,8 @@ function checkShareParam() {
                 }
                 if (!recLU.supabaseId) { recLU.supabaseId = recU.id; saveUsers(); }
                 saveSession(recLU); currentUser = recLU;
-                setTimeout(function() { enterDashboard(); }, 200);
+                // Show reset password form (NOT dashboard) -- PASSWORD_RECOVERY event also fires
+                setTimeout(function() { showPage('auth'); switchAuth('reset-pw'); }, 200);
               }
             }).catch(function() {
               window.addEventListener('load', function() {
@@ -4828,17 +4846,10 @@ function checkShareParam() {
         return;
       }
       if (event === 'PASSWORD_RECOVERY') {
-        // User clicked reset link and is now logged in -- prompt to change password
-        setTimeout(function() {
-          if (!document.getElementById('pw-reset-banner')) {
-            var banner = document.createElement('div');
-            banner.id = 'pw-reset-banner';
-            banner.style.cssText = 'position:fixed;top:68px;left:50%;transform:translateX(-50%);background:#12121A;border:1px solid #5C5FEF;color:#F2F2FA;padding:14px 24px;border-radius:12px;font-size:14px;z-index:9999;text-align:center;max-width:500px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
-            banner.innerHTML = '\u2713 Signed in via reset link. Go to <strong>Settings</strong> to set your new password.';
-            document.body.appendChild(banner);
-            setTimeout(function() { var b=document.getElementById('pw-reset-banner'); if(b)b.remove(); }, 12000);
-          }
-        }, 800);
+        // User clicked reset link -- show the Set New Password form
+        console.log('[WealthOS] Password recovery detected, showing reset form');
+        showPage('auth');
+        switchAuth('reset-pw');
         return;
       }
     });
@@ -5006,7 +5017,7 @@ function generateWealthReport() {
       window.showAuth = function(mode) {
         console.log('showAuth:', mode);
         showPage('auth');
-        var views = { login: 'auth-login', signup: 'auth-signup', forgot: 'auth-forgot' };
+        var views = { login: 'auth-login', signup: 'auth-signup', forgot: 'auth-forgot', 'reset-pw': 'auth-reset-pw' };
         Object.keys(views).forEach(function(k) {
           var el = document.getElementById(views[k]);
           if (el) el.style.display = k === mode ? 'block' : 'none';
