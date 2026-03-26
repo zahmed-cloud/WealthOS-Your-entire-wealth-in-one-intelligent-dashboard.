@@ -2200,12 +2200,8 @@ body.light-mode .kbd-box{background:#fff}
                 <div class="ff full"><label>Target Net Worth</label><input id="s-goal" type="number" placeholder="10000000"></div>
                 
               <div class="ff full">
-                <label>Anthropic API Key <span style="font-size:10px;color:var(--muted);font-weight:400">(optional override — AI works automatically)</span></label>
-                <div style="display:flex;gap:8px">
-                  <input id="s-apikey" type="password" placeholder="Pre-configured — paste your own key to override" style="flex:1" oninput="saveApiKey()">
-                  <button onclick="testApiKey()" style="padding:0 16px;background:rgba(92,95,239,0.1);border:1px solid rgba(92,95,239,0.2);border-radius:8px;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap">Test Key</button>
-                </div>
-                <div id="apikey-status" style="font-size:11px;margin-top:4px;font-family:var(--mono)"></div>
+                <label>Email</label>
+                <input id="s-email" type="email" disabled style="opacity:0.6;cursor:not-allowed">
               </div>
               <div class="ff full">
                 <label>Appearance</label>
@@ -2224,7 +2220,6 @@ body.light-mode .kbd-box{background:#fff}
           <div class="card-h"><span class="card-title">Export Data</span></div>
           <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap">
             <button class="btn btn-g" id="export-btn" onclick="exportData()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export JSON</button>
-            <button class="btn btn-g" onclick="if(confirm('Reset to demo data? This will replace your current portfolio.')){assets=[];milestones=[];seedData();renderAll();}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.2"/></svg> Reset Demo Data</button>
             <button style="background:rgba(240,92,113,0.08);border:1px solid rgba(240,92,113,0.15);color:var(--red);border-radius:4px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--mono)" onclick="if(confirm('Delete ALL portfolio data?')){if(currentUser){localStorage.removeItem('pw_assets_'+currentUser.id);localStorage.removeItem('pw_milestones_'+currentUser.id);}assets=[];milestones=[];saveData();renderAll()}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Clear All Data</button>
           </div>
         </div>
@@ -2509,8 +2504,9 @@ body.light-mode .kbd-box{background:#fff}
 </div>
 
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
-<script>try { Paddle.Initialize({ token: 'live_3cf9cb8c888d0e55c50ef2212cd' }); } catch(e) { console.warn('Paddle loading...'); }</script>
+<script>try { Paddle.Initialize({ token: 'live_3cf9cb8c888d0e55c50ef2212cd', eventCallback: function(ev) { if (window._paddleEventCallback) window._paddleEventCallback(ev); } }); console.log('[WealthOS] Paddle initialized'); } catch(e) { console.warn('Paddle loading...'); }</script>
 
 <script src="script.js"></script>
+
 </body>
 </html>

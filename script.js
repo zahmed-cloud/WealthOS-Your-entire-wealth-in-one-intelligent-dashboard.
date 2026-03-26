@@ -1284,18 +1284,22 @@ var PADDLE_CONFIG = {
 };
 
 function startPaddleCheckout(plan) {
-  if (!currentUser) { showAuth('login'); return; }
+  if (!currentUser) {
+    // Not logged in - show auth first, store intended plan
+    window._pendingPlan = plan;
+    showAuth('signup');
+    _showToast('Create an account first, then complete your upgrade.', 'info');
+    return;
+  }
 
   var priceId = plan === 'private' ? PADDLE_CONFIG.privatePriceId : PADDLE_CONFIG.proPriceId;
   if (!priceId) {
     _showToast('Payment system is being configured. Please try again shortly.', 'warn');
-    console.warn('[WealthOS] Paddle price ID not set for plan:', plan);
     return;
   }
 
-  if (typeof Paddle === 'undefined') {
-    _showToast('Payment system is loading. Please try again.', 'warn');
-    console.warn('[WealthOS] Paddle.js not loaded');
+  if (typeof Paddle === 'undefined' || !Paddle.Checkout) {
+    _showToast('Payment system is loading. Please try again in a moment.', 'warn');
     return;
   }
 
@@ -1304,18 +1308,17 @@ function startPaddleCheckout(plan) {
       items: [{ priceId: priceId, quantity: 1 }],
       customer: { email: currentUser.email },
       customData: {
-        userId: currentUser.id,
-        supabaseId: currentUser.supabaseId || '',
-        email: currentUser.email
+        userId: String(currentUser.id),
+        supabaseId: String(currentUser.supabaseId || ''),
+        email: String(currentUser.email)
       },
       settings: {
-        successUrl: window.location.origin + window.location.pathname + '?upgraded=1',
-        allowLogout: false,
         displayMode: 'overlay',
-        theme: 'dark'
+        theme: 'dark',
+        locale: 'en'
       }
     });
-    console.log('[WealthOS] Paddle checkout opened for:', plan);
+    console.log('[WealthOS] Paddle checkout opened for:', plan, priceId);
   } catch(e) {
     console.error('[WealthOS] Paddle checkout error:', e);
     _showToast('Could not open checkout. Please try again.', 'error');
@@ -1346,14 +1349,33 @@ function refreshUserPlan() {
 (function() {
   try {
     if (window.location.search.indexOf('upgraded=1') >= 0) {
-      // Remove query param
       var clean = window.location.pathname;
       window.history.replaceState({}, '', clean);
-      // Refresh plan from Supabase after short delay (webhook may still be processing)
       setTimeout(refreshUserPlan, 2000);
       setTimeout(refreshUserPlan, 5000);
       setTimeout(refreshUserPlan, 10000);
     }
+  } catch(e) {}
+})();
+
+// Listen for Paddle checkout events (instant plan update on success)
+(function() {
+  try {
+    if (typeof Paddle !== 'undefined' && Paddle.Checkout) {
+      // Paddle v2 fires events via eventCallback
+    }
+    // Also set up via Paddle.Initialize callback
+    window._paddleEventCallback = function(ev) {
+      try {
+        if (ev.name === 'checkout.completed' || ev.name === 'checkout.closed') {
+          if (ev.name === 'checkout.completed') {
+            _showToast('Payment successful! Upgrading your plan...', 'success');
+            setTimeout(refreshUserPlan, 2000);
+            setTimeout(refreshUserPlan, 5000);
+          }
+        }
+      } catch(e) {}
+    };
   } catch(e) {}
 })();
 function showUpgradeInsights() {
@@ -2120,6 +2142,15 @@ function enterDashboard() {
       }
     }
     console.log('[WealthOS] Dashboard loaded successfully');
+
+    // Check if user was trying to upgrade before signing up
+    if (window._pendingPlan && (window._pendingPlan === 'pro' || window._pendingPlan === 'private')) {
+      var pendingPlan = window._pendingPlan;
+      window._pendingPlan = null;
+      setTimeout(function() {
+        startPaddleCheckout(pendingPlan);
+      }, 1500);
+    }
   } catch(e) {
     console.error('[WealthOS] enterDashboard error:', e);
     showPage('app');
@@ -2411,7 +2442,9 @@ function renderAll() {
     var sName = safeGet('s-name');
     if (sName) sName.value = settings.name || '';
     var sKey = safeGet('s-apikey');
-    if (sKey) { sKey.value = ''; sKey.placeholder = 'Managed by WealthOS'; sKey.disabled = true; }
+    if (sKey) { sKey.style.display = 'none'; } // Removed from UI
+    var sEmail = safeGet('s-email');
+    if (sEmail && currentUser) sEmail.value = currentUser.email || '';
 
     var sGoal = safeGet('s-goal');
     if (sGoal) sGoal.value = settings.goal || 10000000;
@@ -3207,7 +3240,7 @@ function rMarketIntelligence(plan) {
           '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 8px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
           '<div style="font-size:12px;color:var(--text);font-weight:600;margin-bottom:3px">Pro Feature</div>' +
           '<div style="font-size:11px;color:var(--muted)">Upgrade to Pro for market intelligence</div>' +
-          '<button onclick="showLanding()" style="margin-top:10px;background:var(--blue);border:none;border-radius:6px;padding:7px 16px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans)">View Plans</button>' +
+          '<button onclick="goPricing()" style="margin-top:10px;background:var(--blue);border:none;border-radius:6px;padding:7px 16px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans)">View Plans</button>' +
         '</div></div></div>';
     return;
   }
@@ -3239,7 +3272,7 @@ function runPanicMode() {
         '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 10px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
         '<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px">Private Plan Feature</div>' +
         '<div style="font-size:12px;color:var(--muted);margin-bottom:12px">Stress testing is available on the Private plan.</div>' +
-        '<button onclick="showLanding()" style="background:var(--blue);border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans)">View Plans</button>' +
+        '<button onclick="goPricing()" style="background:var(--blue);border:none;border-radius:6px;padding:8px 18px;font-size:12px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans)">View Plans</button>' +
       '</div>';
       r.classList.add('show');
     }
