@@ -2077,14 +2077,18 @@ function enterDashboard() {
     var ukey = 'pw_assets_' + currentUser.id;
     var mkey = 'pw_milestones_' + currentUser.id;
     var skey = 'pw_settings_' + currentUser.id;
-    try { assets = JSON.parse(localStorage.getItem(ukey) || '[]'); } catch(e) { assets = []; }
-    try { milestones = JSON.parse(localStorage.getItem(mkey) || '[]'); } catch(e) { milestones = []; }
+
+    // Load settings from localStorage (lightweight, always available)
     var savedSettings = null;
     try { savedSettings = localStorage.getItem(skey); } catch(e) {}
     try { settings = savedSettings ? JSON.parse(savedSettings) : Object.assign({}, DEFAULT_SETTINGS, {
       name: (currentUser.firstName || '') + ' ' + (currentUser.lastName || '')
     }); } catch(e) { settings = Object.assign({}, DEFAULT_SETTINGS); }
     if (currentUser.plan) settings.plan = currentUser.plan;
+
+    // Start with empty arrays (no fake data, no stale cache)
+    assets = [];
+    milestones = [];
 
     document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
     document.querySelectorAll('.sb-item').forEach(function(s) { s.classList.remove('active'); });
@@ -2093,64 +2097,97 @@ function enterDashboard() {
     var firstSb = document.querySelector('.sb-item');
     if (firstSb) firstSb.classList.add('active');
 
-    try { updateBadgeCount(); } catch(e) {}
-    renderAll();
-    setTimeout(function(){ try{ syncPrices(true); }catch(e){} }, 1500);
-    setTimeout(function(){ try{ pullAssetsFromSupabase(); }catch(e){} }, 800);
-    try { initPortfolios(); } catch(e) {}
-    try { saveNWSnapshot(); } catch(e) {}
-    setTimeout(function() { try { loadHistoryFromSupabase(); } catch(e) {} }, 1200);
-    try {
-      if (localStorage.getItem('pw_notif') === '1') {
-        var nd = document.getElementById('notif-dot');
-        if (nd) nd.classList.add('active');
-      }
-    } catch(e) {}
-    setTimeout(function() { try { checkPWAPrompt(); } catch(e) {} }, 4000);
-
-    // First-time user: welcome + auto-prompt to add asset
-    if (assets.length === 0) {
-      var isFirstVisit = !localStorage.getItem('pw_welcomed_' + currentUser.id);
-      if (isFirstVisit) {
-        try { localStorage.setItem('pw_welcomed_' + currentUser.id, '1'); } catch(e) {}
-        setTimeout(function() {
-          _showToast('Welcome to WealthOS! Add your first asset to get started.', 'info');
-          // Pulse the add asset button to draw attention
+    // SUPABASE-FIRST: fetch real data from database, then render
+    var _sbDash = getSB();
+    if (_sbDash && currentUser.supabaseId) {
+      setLoading('all-table', true, 'Loading your portfolio...');
+      _sbDash.auth.getUser().then(function(res) {
+        if (!res.data || !res.data.user) throw new Error('no user');
+        var uid = res.data.user.id;
+        return _sbDash.from('assets').select('*').eq('user_id', uid).order('created_at');
+      }).then(function(result) {
+        setLoading('all-table', false);
+        if (result.data && result.data.length > 0) {
+          assets = result.data.map(function(row, i) { return rowToAsset(row, i); });
+          // Cache in localStorage for faster next load
+          try { localStorage.setItem(ukey, JSON.stringify(assets)); } catch(e) {}
+        } else {
+          // No cloud assets -- check localStorage cache as fallback
           try {
-            var addBtns = document.querySelectorAll('.empty-cta');
-            addBtns.forEach(function(btn) {
-              btn.style.animation = 'none';
-              btn.offsetHeight; // force reflow
-              btn.style.animation = '';
-              btn.style.boxShadow = '0 0 0 0 rgba(92,95,239,0.6)';
-              var pulseCount = 0;
-              var pulseInterval = setInterval(function() {
-                btn.style.boxShadow = pulseCount % 2 === 0
-                  ? '0 0 0 8px rgba(92,95,239,0.15)'
-                  : '0 0 0 0 rgba(92,95,239,0)';
-                btn.style.transition = 'box-shadow 0.5s ease';
-                pulseCount++;
-                if (pulseCount >= 6) {
-                  clearInterval(pulseInterval);
-                  btn.style.boxShadow = '';
-                  btn.style.transition = '';
-                }
-              }, 500);
-            });
-          } catch(e) {}
-        }, 1200);
-      }
+            var cached = JSON.parse(localStorage.getItem(ukey) || '[]');
+            if (cached.length > 0) assets = cached;
+          } catch(e) { assets = []; }
+        }
+        // Load milestones from localStorage (not in Supabase)
+        try { milestones = JSON.parse(localStorage.getItem(mkey) || '[]'); } catch(e) { milestones = []; }
+        _dashboardReady();
+      }).catch(function(e) {
+        setLoading('all-table', false);
+        console.warn('[WealthOS] Supabase load failed, using cache:', e);
+        // Fallback to localStorage
+        try { assets = JSON.parse(localStorage.getItem(ukey) || '[]'); } catch(e2) { assets = []; }
+        try { milestones = JSON.parse(localStorage.getItem(mkey) || '[]'); } catch(e2) { milestones = []; }
+        _dashboardReady();
+      });
+    } else {
+      // No Supabase -- use localStorage
+      try { assets = JSON.parse(localStorage.getItem(ukey) || '[]'); } catch(e) { assets = []; }
+      try { milestones = JSON.parse(localStorage.getItem(mkey) || '[]'); } catch(e) { milestones = []; }
+      _dashboardReady();
     }
-    console.log('[WealthOS] Dashboard loaded successfully');
 
-    // Check if user was trying to upgrade before signing up
-    if (window._pendingPlan && (window._pendingPlan === 'pro' || window._pendingPlan === 'private')) {
-      var pendingPlan = window._pendingPlan;
-      window._pendingPlan = null;
-      setTimeout(function() {
-        startPaddleCheckout(pendingPlan);
-      }, 1500);
-    }
+    function _dashboardReady() {
+      try { updateBadgeCount(); } catch(e) {}
+      renderAll();
+      setTimeout(function(){ try{ syncPrices(true); }catch(e){} }, 1500);
+      try { initPortfolios(); } catch(e) {}
+      try { saveNWSnapshot(); } catch(e) {}
+      setTimeout(function() { try { loadHistoryFromSupabase(); } catch(e) {} }, 1200);
+      try {
+        if (localStorage.getItem('pw_notif') === '1') {
+          var nd = document.getElementById('notif-dot');
+          if (nd) nd.classList.add('active');
+        }
+      } catch(e) {}
+      setTimeout(function() { try { checkPWAPrompt(); } catch(e) {} }, 4000);
+
+      // First-time user: welcome
+      if (assets.length === 0) {
+        var isFirstVisit = !localStorage.getItem('pw_welcomed_' + currentUser.id);
+        if (isFirstVisit) {
+          try { localStorage.setItem('pw_welcomed_' + currentUser.id, '1'); } catch(e) {}
+          setTimeout(function() {
+            _showToast('Welcome to WealthOS! Add your first asset to get started.', 'info');
+            try {
+              var addBtns = document.querySelectorAll('.empty-cta');
+              addBtns.forEach(function(btn) {
+                btn.style.boxShadow = '0 0 0 0 rgba(92,95,239,0.6)';
+                var pulseCount = 0;
+                var pulseInterval = setInterval(function() {
+                  btn.style.boxShadow = pulseCount % 2 === 0
+                    ? '0 0 0 8px rgba(92,95,239,0.15)'
+                    : '0 0 0 0 rgba(92,95,239,0)';
+                  btn.style.transition = 'box-shadow 0.5s ease';
+                  pulseCount++;
+                  if (pulseCount >= 6) { clearInterval(pulseInterval); btn.style.boxShadow = ''; btn.style.transition = ''; }
+                }, 500);
+              });
+            } catch(e) {}
+          }, 1200);
+        }
+      }
+      console.log('[WealthOS] Dashboard loaded, assets:', assets.length);
+
+      // Inject "Coming Soon" badges into sidebar
+      _injectComingSoon();
+
+      // Pending upgrade checkout
+      if (window._pendingPlan && (window._pendingPlan === 'pro' || window._pendingPlan === 'private')) {
+        var pendingPlan = window._pendingPlan;
+        window._pendingPlan = null;
+        setTimeout(function() { startPaddleCheckout(pendingPlan); }, 1500);
+      }
+    } // end _dashboardReady
   } catch(e) {
     console.error('[WealthOS] enterDashboard error:', e);
     showPage('app');
@@ -2173,6 +2210,44 @@ function saveData() {
 function seedData() {
   // REMOVED: No demo/sample data. Users add their own assets.
   console.log('[WealthOS] seedData disabled - production mode');
+}
+
+// ============================================
+// COMING SOON BADGES (UI only, no functionality)
+// ============================================
+function _injectComingSoon() {
+  try {
+    if (document.getElementById('coming-soon-items')) return; // already injected
+    var sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+
+    var container = document.createElement('div');
+    container.id = 'coming-soon-items';
+    container.style.cssText = 'margin-top:auto;padding:8px 6px 12px;border-top:1px solid rgba(255,255,255,0.06)';
+
+    var label = document.createElement('div');
+    label.style.cssText = 'font-size:9px;font-weight:600;letter-spacing:0.1em;color:var(--muted2);padding:6px 12px 4px;font-family:var(--mono);text-transform:uppercase';
+    label.textContent = 'Coming Soon';
+    container.appendChild(label);
+
+    var items = [
+      { icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>', text: 'Bank Sync' },
+      { icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>', text: 'Crypto Wallet Connect' },
+      { icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>', text: 'Broker Sync' },
+    ];
+
+    items.forEach(function(item) {
+      var el = document.createElement('div');
+      el.style.cssText = 'display:flex;align-items:center;gap:9px;padding:6px 12px;margin:1px 0;font-size:12px;color:var(--muted2);opacity:0.5;cursor:default;border-radius:8px';
+      el.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;opacity:0.5">' + item.icon + '</span>' +
+        '<span>' + item.text + '</span>' +
+        '<span style="margin-left:auto;font-size:8px;font-weight:700;letter-spacing:0.08em;background:rgba(92,95,239,0.1);color:var(--blue);padding:2px 6px;border-radius:4px;font-family:var(--mono)">SOON</span>';
+      el.title = item.text + ' - Coming Soon';
+      container.appendChild(el);
+    });
+
+    sidebar.appendChild(container);
+  } catch(e) { console.warn('[WealthOS] Coming soon injection failed:', e); }
 }
 
 // ==============================================
