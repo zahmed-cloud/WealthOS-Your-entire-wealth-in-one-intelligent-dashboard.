@@ -2044,7 +2044,9 @@ function timeSince(ts) {
   return Math.round(mins/60) + 'h ago';
 }
 
+var _enteringDashboard = false;
 function enterDashboard() {
+  if (_enteringDashboard) { console.log('[WealthOS] enterDashboard already in progress, skipping'); return; }
   console.log('[WealthOS] enterDashboard called, currentUser:', currentUser ? currentUser.email : 'null');
   // -- Route protection: require valid session --
   if (!currentUser) {
@@ -2066,6 +2068,7 @@ function enterDashboard() {
     return;
   }
   try {
+    _enteringDashboard = true;
     showPage('app');
     var initials = (currentUser.firstName || 'U').charAt(0).toUpperCase() +
                    (currentUser.lastName  || '').charAt(0).toUpperCase();
@@ -2137,8 +2140,22 @@ function enterDashboard() {
     }
 
     function _dashboardReady() {
+      _enteringDashboard = false;
+      console.log('[WealthOS] _dashboardReady fired, assets:', assets.length);
       try { updateBadgeCount(); } catch(e) {}
       renderAll();
+
+      // CRITICAL: Force re-render at multiple intervals
+      // Ensures AI insights, alerts, projections always render
+      // even if initial renderAll fires before DOM is fully settled
+      function _forceOverview() {
+        console.log('[WealthOS] Force re-render, assets:', assets.length);
+        try { renderView('overview'); } catch(e) {}
+      }
+      setTimeout(_forceOverview, 400);
+      setTimeout(_forceOverview, 1200);
+      setTimeout(_forceOverview, 2500);
+
       setTimeout(function(){ try{ syncPrices(true); }catch(e){} }, 1500);
       try { initPortfolios(); } catch(e) {}
       try { saveNWSnapshot(); } catch(e) {}
@@ -2571,10 +2588,8 @@ function renderView(id) {
 // ==============================================
 function rOverview() {
   try {
-  // Show skeleton briefly
-  var sk = safeGet('ov-skeleton');
-  if (sk) { sk.style.display='block'; }
-  setTimeout(function() { if (sk) sk.style.display='none'; _rOverviewContent(); }, 380);
+    console.log('[WealthOS] rOverview called, assets:', assets.length);
+    _rOverviewContent();
   } catch(e) { console.error('[WealthOS] rOverview error:', e); }
 }
 // ============================================================
@@ -2796,6 +2811,7 @@ function _rOverviewContent() {
   }
 
   var plan = currentUser ? (currentUser.plan||'free') : 'free';
+  console.log('[WealthOS] _rOverviewContent: tv=' + tv + ', assets=' + assets.length + ', plan=' + plan);
   rSnapshot(tv, cls);
   rInsights(cls, tv, gain, pct);
   rAlerts(cls, tv);
@@ -3258,7 +3274,12 @@ function rInsights(cls, tv, gain, pct) {
 function rAlerts(cls, tv) {
   var el = safeGet('wi-alerts');
   var countEl = safeGet('wi-alert-count');
-  if (!el || !tv) return;
+  if (!el) return;
+  if (!tv || assets.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:16px">Add assets to see risk analysis.</div>';
+    if (countEl) countEl.textContent = '0';
+    return;
+  }
   var alerts = [];
   var highRiskSVG = '<svg class="risk-icon high" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
   var medRiskSVG  = '<svg class="risk-icon med" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
@@ -3387,9 +3408,7 @@ function runPanicMode() {
 
 // -- 6: 3-Scenario Projection --
 function rProjection(tv) {
-  var ctx = safeGet('proj-chart');
-  if (!ctx || !tv || !_chartAvailable()) return;
-  projChart = destroyChart(projChart);
+  if (!tv || tv <= 0) return;
 
   var cls = clsT();
   var rates = {stock:0.10, real_estate:0.07, crypto:0.20, art:0.08, watch:0.06, cash:0.04, other:0.06};
@@ -3398,16 +3417,16 @@ function rProjection(tv) {
   else wr = 0.08;
   wr = Math.min(wr, 0.15);
 
-  var bearRate = wr * 0.45;   // conservative
-  var baseRate = wr;           // expected
-  var bullRate = wr * 1.65;   // optimistic
+  var bearRate = wr * 0.45;
+  var baseRate = wr;
+  var bullRate = wr * 1.65;
 
   var years = [0,1,2,3,4,5,6,7,8,9,10];
   var bearVals = years.map(function(y){return Math.round(tv*Math.pow(1+bearRate,y));});
   var baseVals = years.map(function(y){return Math.round(tv*Math.pow(1+baseRate,y));});
   var bullVals = years.map(function(y){return Math.round(tv*Math.pow(1+bullRate,y));});
 
-  // Update scenario summary cards
+  // ALWAYS render scenario cards (no Chart.js dependency)
   var scenEl = safeGet('proj-scenarios');
   if (scenEl) {
     scenEl.innerHTML =
@@ -3420,12 +3439,18 @@ function rProjection(tv) {
       '<div class="proj-scenario bull"><div class="proj-sc-label">Optimistic</div>' +
         '<div class="proj-sc-val">'+fmtS(bullVals[10])+'</div>' +
         '<div class="proj-sc-5yr">5yr: '+fmtS(bullVals[5])+'</div></div>';
+    console.log('[WealthOS] Projection scenarios rendered');
   }
 
-  // Legacy proj-today/5yr/10yr (keep for compatibility)
+  // Legacy elements
   safeSet('proj-today', fmtS(tv));
   safeSet('proj-5yr',   fmtS(baseVals[5]));
   safeSet('proj-10yr',  fmtS(baseVals[10]));
+
+  // Chart requires Chart.js
+  var ctx = safeGet('proj-chart');
+  if (!ctx || !_chartAvailable()) return;
+  projChart = destroyChart(projChart);
 
   var rate = getCurrencyRate();
   var labels = years.map(function(y){return y===0?'Now':'Yr '+y;});
