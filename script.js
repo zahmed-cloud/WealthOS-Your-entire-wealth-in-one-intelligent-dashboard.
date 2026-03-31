@@ -3202,6 +3202,18 @@ function rInsights(cls, tv, gain, pct) {
   if (insight5) allInsights.push(insight5);
   allInsights.push(insight6);
 
+  // Define insightCard renderer FIRST (used by benchmark and final render)
+  var insightCard = function(ins) {
+    if (!ins) return '';
+    return '<div class="intel-card">' +
+      '<div class="intel-card-label">' + (ins.label || '') + '</div>' +
+      '<div class="intel-card-val"' + (ins.color ? ' style="color:' + ins.color + '"' : '') + '>' +
+        (ins.val || '') +
+      '</div>' +
+      '<div class="intel-card-desc">' + (ins.desc || '') + '</div>' +
+    '</div>';
+  };
+
   // -- INSIGHT 7: BENCHMARK COMPARISON --
   // Compare all-time portfolio return vs S&P 500 YTD (fetched via /api/prices)
   var insight7 = null;
@@ -3264,16 +3276,6 @@ function rInsights(cls, tv, gain, pct) {
   }
 
   // -- Render --
-  var insightCard = function(ins) {
-    return '<div class="intel-card">' +
-      '<div class="intel-card-label">' + ins.label + '</div>' +
-      '<div class="intel-card-val"' + (ins.color ? ' style="color:' + ins.color + '"' : '') + '>' +
-        ins.val +
-      '</div>' +
-      '<div class="intel-card-desc">' + ins.desc + '</div>' +
-    '</div>';
-  };
-
   if (!isPro) {
     // Free: show first insight + upgrade prompt
     grid.innerHTML = insightCard(allInsights[0]) +
