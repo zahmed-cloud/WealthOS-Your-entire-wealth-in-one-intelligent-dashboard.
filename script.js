@@ -2145,16 +2145,35 @@ function enterDashboard() {
       try { updateBadgeCount(); } catch(e) {}
       renderAll();
 
-      // CRITICAL: Force re-render at multiple intervals
-      // Ensures AI insights, alerts, projections always render
-      // even if initial renderAll fires before DOM is fully settled
-      function _forceOverview() {
-        console.log('[WealthOS] Force re-render, assets:', assets.length);
-        try { renderView('overview'); } catch(e) {}
+      // CRITICAL: Independent AI section renderer
+      // Runs SEPARATELY from overview chain to guarantee AI sections always render
+      function _renderAISections() {
+        if (assets.length === 0) {
+          console.log('[WealthOS] AI render skipped: no assets');
+          return;
+        }
+        var tv = totalV();
+        var cls = clsT();
+        var portfolio = calcPortfolio();
+        var gain = portfolio.totalPL || 0;
+        var pct = portfolio.totalPLPct || 0;
+        var plan = settings.plan || (currentUser ? currentUser.plan : 'free') || 'free';
+        console.log('[WealthOS] AI render: tv=' + tv + ', assets=' + assets.length + ', plan=' + plan);
+        try { rInsights(cls, tv, gain, pct); } catch(e) { console.warn('[WealthOS] AI rInsights:', e); }
+        try { rAlerts(cls, tv); } catch(e) { console.warn('[WealthOS] AI rAlerts:', e); }
+        try { rMarketIntelligence(plan); } catch(e) { console.warn('[WealthOS] AI rMarket:', e); }
+        try { rProjection(tv); } catch(e) { console.warn('[WealthOS] AI rProjection:', e); }
       }
-      setTimeout(_forceOverview, 400);
-      setTimeout(_forceOverview, 1200);
-      setTimeout(_forceOverview, 2500);
+
+      // Force overview re-render + independent AI render at multiple intervals
+      function _forceAll() {
+        try { renderView('overview'); } catch(e) {}
+        _renderAISections();
+      }
+      setTimeout(_forceAll, 300);
+      setTimeout(_forceAll, 1000);
+      setTimeout(_forceAll, 2500);
+      setTimeout(_forceAll, 5000);
 
       setTimeout(function(){ try{ syncPrices(true); }catch(e){} }, 1500);
       try { initPortfolios(); } catch(e) {}
@@ -2812,13 +2831,13 @@ function _rOverviewContent() {
 
   var plan = currentUser ? (currentUser.plan||'free') : 'free';
   console.log('[WealthOS] _rOverviewContent: tv=' + tv + ', assets=' + assets.length + ', plan=' + plan);
-  rSnapshot(tv, cls);
-  rInsights(cls, tv, gain, pct);
-  rAlerts(cls, tv);
-  rMarketIntelligence(plan);
+  // Each AI section is independent — one failure must NOT kill the others
+  try { rSnapshot(tv, cls); } catch(e) { console.warn('[WealthOS] rSnapshot error:', e); }
+  try { rInsights(cls, tv, gain, pct); } catch(e) { console.warn('[WealthOS] rInsights error:', e); }
+  try { rAlerts(cls, tv); } catch(e) { console.warn('[WealthOS] rAlerts error:', e); }
+  try { rMarketIntelligence(plan); } catch(e) { console.warn('[WealthOS] rMarketIntelligence error:', e); }
   setTimeout(function() {
-    rProjection(tv);
-    // Goal projected date
+    try { rProjection(tv); } catch(e) { console.warn('[WealthOS] rProjection error:', e); }
     try {
       var cls2 = clsT(), tv2 = totalV();
       var rates2 = {stock:0.10,real_estate:0.07,crypto:0.20,art:0.08,watch:0.06,cash:0.04,other:0.06};
@@ -2827,7 +2846,6 @@ function _rOverviewContent() {
       wr2 = Math.min(wr2, 0.15);
       renderGoalDate(tv2, settings.goal || 10000000, wr2);
     } catch(e) {}
-    // Check and notify
     try { checkAndNotify(clsT(), totalV()); } catch(e) {}
   }, 100);
   } catch(e) { console.error('[WealthOS] _rOverviewContent error:', e); }
