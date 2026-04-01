@@ -1307,11 +1307,6 @@ function startPaddleCheckout(plan) {
     Paddle.Checkout.open({
       items: [{ priceId: priceId, quantity: 1 }],
       customer: { email: currentUser.email },
-      customData: {
-        userId: String(currentUser.id),
-        supabaseId: String(currentUser.supabaseId || ''),
-        email: String(currentUser.email)
-      },
       settings: {
         displayMode: 'overlay',
         theme: 'dark',

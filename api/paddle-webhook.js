@@ -126,9 +126,10 @@ export default async function handler(req, res) {
 
     console.log('Paddle webhook:', eventType);
 
-    // Extract customer info
+    // Extract customer info - check customData first, then customer object
     const customData = data.custom_data || {};
-    const email = customData.email || (data.customer ? data.customer.email : '');
+    const customerEmail = data.customer ? (data.customer.email || '') : '';
+    const email = customData.email || customerEmail;
     const supabaseId = customData.supabaseId || '';
 
     if (!email && !supabaseId) {
