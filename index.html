@@ -2197,7 +2197,7 @@ body.light-mode .kbd-box{background:#fff}
                     <option value="AED">AED — UAE Dirham (د.إ)</option>
                   </select>
                 </div>
-                <div class="ff full"><label>Target Net Worth</label><input id="s-goal" type="number" placeholder="10000000"></div>
+                <div class="ff full"><label>Target Net Worth</label><input id="s-goal" type="number" placeholder="Enter your target (e.g. 1000000)"></div>
                 
               <div class="ff full">
                 <label>Email</label>
@@ -2282,7 +2282,7 @@ body.light-mode .kbd-box{background:#fff}
         </div>
         <div class="ff"><label>Cost Basis</label><input id="a-cost" type="number" placeholder="0.00"></div>
         <div class="ff"><label>Current Value</label><input id="a-val" type="number" placeholder="0.00"></div>
-        <div class="ff"><label>Purchase Date</label><input id="a-date" type="date"></div>
+        <div class="ff"><label>Purchase Date</label><input id="a-date" type="date" max="" placeholder="YYYY-MM-DD" onfocus="this.max=new Date().toISOString().split('T')[0]"></div>
         <div class="ff"><label>Quantity</label><input id="a-qty" type="number" placeholder="1" value="1"></div>
         <div class="ff"><label>Location / Broker</label><input id="a-loc" placeholder="Schwab, Coinbase, NYC..."></div>
         <div class="ff full"><label>Notes</label><input id="a-notes" placeholder="Optional notes"></div>
@@ -2321,9 +2321,9 @@ body.light-mode .kbd-box{background:#fff}
       <button class="waitlist-submit" onclick="submitWaitlist()">Join Waitlist →</button>
     </div>
     <div class="waitlist-success" id="waitlist-success" style="transition:opacity 0.3s;opacity:0;display:none"></div>
-    <div class="waitlist-count" id="waitlist-count">1,200+ people on the wai
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js"></script>
+    <div class="waitlist-count" id="waitlist-count">1,200+ people on the waitlist</div>
+  </div>
+</div>
 
 <!-- CSV IMPORT MODAL -->
 <div class="csv-modal-overlay" id="csv-modal">
@@ -2359,6 +2359,9 @@ body.light-mode .kbd-box{background:#fff}
     </div>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
 
 <!-- SHARE MODAL -->
 <div class="share-modal-overlay" id="share-modal">

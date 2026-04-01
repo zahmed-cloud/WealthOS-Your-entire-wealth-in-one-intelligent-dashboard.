@@ -853,7 +853,7 @@ function buildPortfolioContext() {
   var sent = getSentiment ? getSentiment() : {label:'Unknown'};
   var gain    = portfolio.totalPL;
   var totalGainPct = portfolio.totalPLPct > 0 ? portfolio.totalPLPct.toFixed(1) : "0";
-  var goal     = settings.goal || 10000000;
+  var goal     = settings.goal || 0;
   var goalPct  = tv > 0 ? ((tv/goal)*100).toFixed(1) : "0";
   var currency = settings.currency || "USD";
   var userName = settings.name || "the user";
@@ -1406,7 +1406,7 @@ var CAT_COLORS = {
   stock: '#5C5FEF', real_estate: '#22D3A5', crypto: '#F0A030',
   art: '#C8A06A', watch: '#a78bfa', cash: '#6E7191', other: '#5a7299'
 };
-var DEFAULT_SETTINGS = { name: 'J. Smith', goal: 10000000, risk: 'Moderate', currency: 'USD' };
+var DEFAULT_SETTINGS = { name: '', goal: 0, risk: 'Moderate', currency: 'USD' };
 var CURRENCY_SYMBOLS = { USD: '$', EUR: '\u20AC', GBP: '\u00A3', AED: '\u062F.\u0625' };
 var CURRENCY_RATES   = { USD: 1, EUR: 0.92, GBP: 0.79, AED: 3.67 };
 
@@ -2558,7 +2558,7 @@ function renderAll() {
     if (sEmail && currentUser) sEmail.value = currentUser.email || '';
 
     var sGoal = safeGet('s-goal');
-    if (sGoal) sGoal.value = settings.goal || 10000000;
+    if (sGoal) sGoal.value = settings.goal || '';
 
     var sRisk = safeGet('s-risk');
     if (sRisk) sRisk.value = settings.risk || 'Moderate';
@@ -2719,7 +2719,7 @@ function _rOverviewContent() {
   var gain = portfolio.totalPL || 0;
   var pct  = portfolio.totalPLPct || 0;
   var mg   = gain;
-  var goal = parseFloat(settings.goal) || 10000000;
+  var goal = parseFloat(settings.goal) || 0;
   var gp   = goal > 0 ? Math.min(100, (tv / goal) * 100) : 0;
   if (isNaN(gp)) gp = 0;
 
@@ -2844,7 +2844,7 @@ function _rOverviewContent() {
       var wr2 = 0;
       if (tv2 > 0) Object.keys(cls2).forEach(function(c){wr2+=(cls2[c]/tv2)*(rates2[c]||0.07);});
       wr2 = Math.min(wr2, 0.15);
-      renderGoalDate(tv2, settings.goal || 10000000, wr2);
+      renderGoalDate(tv2, settings.goal || 0, wr2);
     } catch(e) {}
     try { checkAndNotify(clsT(), totalV()); } catch(e) {}
   }, 100);
@@ -3185,9 +3185,9 @@ function rInsights(cls, tv, gain, pct) {
   }
 
   // -- BONUS INSIGHT 6: GOAL PROGRESS --
-  var goal    = settings.goal || 10000000;
-  var goalPct = tv > 0 ? (tv / goal * 100) : 0;
-  var insight6 = {
+  var goal    = settings.goal || 0;
+  var goalPct = (goal > 0 && tv > 0) ? (tv / goal * 100) : 0;
+  var insight6 = goal > 0 ? {
     label: 'Goal Progress',
     val:   goalPct.toFixed(1) + '%',
     color: goalPct >= 100 ? 'var(--green)' : goalPct >= 75 ? 'var(--blue)' : 'var(--muted)',
@@ -3195,6 +3195,11 @@ function rInsights(cls, tv, gain, pct) {
            (goalPct >= 100 ? 'Target reached!' :
             goalPct >= 75  ? fmtS(goal - tv) + ' remaining -- on track.' :
                              fmtS(goal - tv) + ' remaining.')
+  } : {
+    label: 'Goal Progress',
+    val:   'Not set',
+    color: 'var(--muted)',
+    desc:  'Set a target net worth in Settings to track your progress.'
   };
 
   var allInsights = [insight1, insight2, insight3];
@@ -3553,8 +3558,8 @@ function rAllAssets() {
       '</div></td>' +
       // Actions
       '<td>' +
-        '<button onclick="editAsset(' + c.id + ')" style="background:rgba(92,95,239,0.07);border:none;color:#5C5FEF;border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono);margin-right:3px">EDIT</button>' +
-        '<button onclick="deleteAsset(' + c.id + ')" style="background:rgba(240,92,113,0.07);border:none;color:var(--red);border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono)">DEL</button>' +
+        '<button onclick="editAsset(\'' + c.id + '\')" style="background:rgba(92,95,239,0.07);border:none;color:#5C5FEF;border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono);margin-right:3px">EDIT</button>' +
+        '<button onclick="deleteAsset(\'' + c.id + '\')" style="background:rgba(240,92,113,0.07);border:none;color:var(--red);border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono)">DEL</button>' +
       '</td>' +
     '</tr>';
   }).join('');
@@ -3595,8 +3600,8 @@ function rCat(viewId, cat) {
       '<td class="' + (g>=0?'tg':'tr2') + '">' + (g>=0?'+':'') + fmt(g) + ' <span style="font-size:10px">' + fmtP(gp) + '</span></td>' +
       '<td class="tmu">' + (a.notes||'--') + '</td>' +
       '<td>' +
-        '<button onclick="editAsset(' + a.id + ')" style="background:rgba(92,95,239,0.07);border:none;color:#5C5FEF;border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono);margin-right:3px">EDIT</button>' +
-        '<button onclick="deleteAsset(' + a.id + ')" style="background:rgba(240,92,113,0.07);border:none;color:var(--red);border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono)">DEL</button>' +
+        '<button onclick="editAsset(\'' + a.id + '\')" style="background:rgba(92,95,239,0.07);border:none;color:#5C5FEF;border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono);margin-right:3px">EDIT</button>' +
+        '<button onclick="deleteAsset(\'' + a.id + '\')" style="background:rgba(240,92,113,0.07);border:none;color:var(--red);border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono)">DEL</button>' +
       '</td>' +
     '</tr>';
   }).join('') : '<tr><td colspan="7" style="text-align:center;padding:36px;color:var(--muted);font-family:var(--mono);font-size:12px">NO ' + cat.toUpperCase().replace('_',' ') + ' ASSETS YET</td></tr>';
@@ -3622,8 +3627,8 @@ function rAlt() {
       '<td class="' + (g>=0?'tg':'tr2') + '">' + (g>=0?'+':'') + fmt(g) + ' ' + fmtP(gp) + '</td>' +
       '<td class="tmu">' + (a.notes||'--') + '</td>' +
       '<td>' +
-        '<button onclick="editAsset(' + a.id + ')" style="background:rgba(92,95,239,0.07);border:none;color:#5C5FEF;border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono);margin-right:3px">EDIT</button>' +
-        '<button onclick="deleteAsset(' + a.id + ')" style="background:rgba(240,92,113,0.07);border:none;color:var(--red);border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono)">DEL</button>' +
+        '<button onclick="editAsset(\'' + a.id + '\')" style="background:rgba(92,95,239,0.07);border:none;color:#5C5FEF;border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono);margin-right:3px">EDIT</button>' +
+        '<button onclick="deleteAsset(\'' + a.id + '\')" style="background:rgba(240,92,113,0.07);border:none;color:var(--red);border-radius:3px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:var(--mono)">DEL</button>' +
       '</td>' +
     '</tr>';
   }).join('') : '<tr><td colspan="6" style="text-align:center;padding:36px;color:var(--muted);font-family:var(--mono);font-size:12px">NO ALTERNATIVE ASSETS YET</td></tr>';
@@ -3785,8 +3790,8 @@ function rSettings() {
     '<div class="pr-row"><div class="pr-top"><span class="pr-label">Total Net Worth</span><span class="pr-val tm">' + fmt(tv) + '</span></div></div>' +
     '<div class="pr-row"><div class="pr-top"><span class="pr-label">Total Assets</span><span class="pr-val tm">' + assets.length + '</span></div></div>' +
     '<div class="pr-row"><div class="pr-top"><span class="pr-label">Unrealised Gain</span><span class="pr-val" style="color:' + (gain>=0?'var(--green)':'var(--red)') + '">' + fmt(gain) + '</span></div></div>' +
-    '<div class="pr-row"><div class="pr-top"><span class="pr-label">Goal Progress</span><span class="pr-val" style="color:var(--green)">' + ((tv/(settings.goal||10000000))*100).toFixed(1) + '%</span></div></div>' +
-    '<div style="margin-top:12px"><div class="goal-track"><div class="goal-fill" style="width:' + Math.min(100,(tv/(settings.goal||10000000))*100) + '%"></div></div></div>' +
+    '<div class="pr-row"><div class="pr-top"><span class="pr-label">Goal Progress</span><span class="pr-val" style="color:var(--green)">' + ((tv/(settings.goal||0))*100).toFixed(1) + '%</span></div></div>' +
+    '<div style="margin-top:12px"><div class="goal-track"><div class="goal-fill" style="width:' + Math.min(100,(tv/(settings.goal||0))*100) + '%"></div></div></div>' +
     '<div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:space-between">' +
       '<div style="font-size:12px;color:var(--muted)">Current Plan</div>' +
       '<div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue);background:rgba(92,95,239,0.1);border:1px solid rgba(92,95,239,0.2);border-radius:20px;padding:3px 10px">' + ({free:'Free',pro:'Pro',private:'Private'}[settings.plan||'free']||'Free') + '</div>' +
@@ -3853,7 +3858,7 @@ function syncAssetsToSupabase() {
 
 function saveSettings() {
   settings.name     = (safeGet('s-name')  || {value:''}).value.trim() || 'J. Smith';
-  settings.goal     = parseFloat((safeGet('s-goal') || {value:10000000}).value) || 10000000;
+  settings.goal     = parseFloat((safeGet('s-goal') || {value:0}).value) || 0;
   settings.risk     = (safeGet('s-risk')  || {value:'Moderate'}).value;
   settings.currency = (safeGet('s-currency') || {value:'USD'}).value || 'USD';
   if (currentUser) settings.plan = currentUser.plan || settings.plan || 'free';
@@ -3889,7 +3894,7 @@ function openAddAsset(cat) {
 
 function editAsset(id) {
   try {
-    var a = assets.find(function(x){ return x.id === id; });
+    var a = assets.find(function(x){ return String(x.id) === String(id); });
     if (!a) { console.warn('[WealthOS] editAsset: asset not found:', id); return; }
     editId = id;
     console.log('[WealthOS] editAsset:', id, a.name);
@@ -3965,12 +3970,12 @@ function saveAsset() {
 
   // -- 1. Update in-memory + localStorage immediately --
   if (isEdit) {
-    var existing = assets.find(function(x){ return x.id === editId; });
+    var existing = assets.find(function(x){ return String(x.id) === String(editId); });
     if (existing) {
       if (existing.supabase_id) a.supabase_id = existing.supabase_id;
       if (existing.lastSynced) a.lastSynced = existing.lastSynced;
     }
-    assets = assets.map(function(x){ return x.id === editId ? a : x; });
+    assets = assets.map(function(x){ return String(x.id) === String(editId) ? a : x; });
     console.log('[WealthOS] Asset updated:', a.name, 'val:', a.val);
   } else {
     assets.push(a);
@@ -4039,10 +4044,10 @@ function deleteAsset(id) {
   if (!confirm('Remove this asset from your portfolio?')) return;
 
   // Find asset before removing (need supabase_id for DB delete)
-  var toDelete = assets.find(function(a){ return a.id === id; });
+  var toDelete = assets.find(function(a){ return String(a.id) === String(id); });
 
   // -- 1. Update UI immediately --
-  assets = assets.filter(function(a){ return a.id !== id; });
+  assets = assets.filter(function(a){ return String(a.id) !== String(id); });
   saveData();
   renderAll();
   var cur = document.querySelector('.sb-item.active');
@@ -4476,18 +4481,40 @@ function renderTourStep() {
 // FEATURE 4: PLAN SELECTOR
 // ==========================================================
 function selectPlan(plan, el) {
-  // If user is logged in and selecting a paid plan, trigger Paddle checkout
-  if (currentUser && (plan === 'pro' || plan === 'private')) {
+  // NOT logged in -> go to auth for ALL plans
+  if (!currentUser) {
+    if (plan === 'pro' || plan === 'private') {
+      window._pendingPlan = plan;
+    }
+    showAuth('signup');
+    return;
+  }
+
+  // Logged in
+  var userPlan = (currentUser.plan || 'free').toLowerCase();
+
+  if (plan === 'free') {
+    // Free -> dashboard
+    enterDashboard();
+    return;
+  }
+
+  // Pro or Private
+  if (plan === 'pro' || plan === 'private') {
+    // Already subscribed to this plan or higher -> dashboard
+    if (userPlan === plan || (userPlan === 'private' && plan === 'pro')) {
+      enterDashboard();
+      _showToast('You already have the ' + userPlan.charAt(0).toUpperCase() + userPlan.slice(1) + ' plan!', 'info');
+      return;
+    }
+    // Not subscribed -> payment
     startPaddleCheckout(plan);
     return;
   }
-  // Otherwise just update the visual selection (signup flow)
+
+  // Fallback
   var hidden = document.getElementById('signup-plan');
   if (hidden) hidden.value = plan;
-  document.querySelectorAll('.plan-opt').forEach(function(opt) {
-    opt.classList.remove('selected');
-  });
-  if (el) el.classList.add('selected');
 }
 
 // ==========================================================
@@ -4643,12 +4670,12 @@ function importCSV() {
     added++;
   }
   saveData();
+  // Sync to Supabase
+  try { syncAssetsToSupabase(); } catch(e) { console.warn('[WealthOS] CSV sync error:', e); }
   closeCSVModal();
   renderAll();
-  navById('assets');
-  // Brief success message
-  var btn = document.querySelector('.ph-right .btn.btn-g');
-  if (btn) { btn.textContent = '\u2713 ' + added + ' imported'; setTimeout(function() { btn.textContent = 'Import CSV'; btn.innerHTML = btn.innerHTML; }, 2500); }
+  try { nav('all'); } catch(e) {}
+  if (added > 0) _showToast(added + ' asset' + (added > 1 ? 's' : '') + ' imported from CSV.', 'success');
 }
 
 // ==========================================================

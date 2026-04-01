@@ -3,7 +3,7 @@
 //
 // SETUP:
 // 1. In Paddle Dashboard → Developer Tools → Notifications → Create
-// 2. URL: https://your-vercel-domain.vercel.app/api/paddle-webhook
+// 2. URL: https://getwealthos.app/api/paddle-webhook
 // 3. Events: subscription.created, subscription.updated, subscription.cancelled
 // 4. Copy webhook secret → add to Vercel env as PADDLE_WEBHOOK_SECRET
 // 5. Also add SUPABASE_SERVICE_KEY (from Supabase → Settings → API → service_role key)
@@ -146,9 +146,10 @@ export default async function handler(req, res) {
         if (status === 'active' || status === 'trialing') {
           // Determine plan from price ID
           const items = data.items || [];
-          const priceId = items.length > 0 ? items[0].price?.id : '';
-          // Default to 'pro' — if you have separate price IDs for private, check here
-          newPlan = 'pro';
+          const priceId = (items.length > 0 && items[0].price) ? items[0].price.id : '';
+          // Map price ID to plan
+          const PRIVATE_PRICE_ID = 'pri_01kmjb5rsd19dqga99vcxmegda';
+          newPlan = (priceId === PRIVATE_PRICE_ID) ? 'private' : 'pro';
           console.log(`Subscription ${status}: ${email} → ${newPlan} (price: ${priceId})`);
         } else if (status === 'past_due' || status === 'paused') {
           // Keep pro for grace period
