@@ -1293,6 +1293,12 @@ function startPaddleCheckout(plan) {
   }
 
   var priceId = plan === 'private' ? PADDLE_CONFIG.privatePriceId : PADDLE_CONFIG.proPriceId;
+
+  // Annual billing not yet available — always use monthly price IDs
+  if (typeof billingMode !== 'undefined' && billingMode === 'annual') {
+    _showToast('Annual billing coming soon. Proceeding with monthly pricing.', 'info');
+  }
+
   if (!priceId) {
     _showToast('Payment system is being configured. Please try again shortly.', 'warn');
     return;
@@ -4230,37 +4236,51 @@ function closeUpgradePrompt() {
 
 function showUpgradePrompt(title, desc) {
   closeUpgradePrompt();
-  var features = ['Unlimited assets','AI portfolio insights','Risk alerts','Wealth projections','Market intelligence','Quarterly reports'];
-  var featureHTML = features.map(function(f) {
-    return '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)">' +
-      '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22D3A5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + f + '</div>';
-  }).join('');
+  var proFeatures = ['Unlimited assets','AI portfolio insights','Risk alerts','Wealth projections','Market intelligence','Quarterly reports'];
+  var privateFeatures = ['Everything in Pro','Portfolio stress testing','Multi-user access','Advisor sharing portal'];
+  var checkSVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22D3A5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var featureHTML = function(list) {
+    return list.map(function(f) {
+      return '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)">' + checkSVG + f + '</div>';
+    }).join('');
+  };
 
   var overlay = document.createElement('div');
   overlay.className = 'modal-overlay show';
   overlay.id = 'upgrade-prompt';
   overlay.innerHTML =
-    '<div class="modal" style="max-width:420px">' +
+    '<div class="modal" style="max-width:520px">' +
       '<div class="modal-h" style="border-bottom:none;padding-bottom:8px">' +
         '<div style="display:flex;align-items:center;gap:10px">' +
           '<div style="width:32px;height:32px;border-radius:9px;background:rgba(92,95,239,0.12);border:1px solid rgba(92,95,239,0.2);display:flex;align-items:center;justify-content:center;color:var(--blue)">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
           '</div>' +
-          '<div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text)">Pro Feature</div>' +
+          '<div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text)">Upgrade Your Plan</div>' +
         '</div>' +
         '<button class="modal-x" onclick="closeUpgradePrompt()">&#x2715;</button>' +
       '</div>' +
       '<div class="modal-body" style="padding-top:8px">' +
         '<div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px">' + title + '</div>' +
         '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">' + desc + '</div>' +
-        '<div style="background:rgba(92,95,239,0.07);border:1px solid rgba(92,95,239,0.14);border-radius:10px;padding:16px;margin-bottom:20px">' +
-          '<div style="font-size:11px;font-weight:600;color:var(--blue);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px">Pro Plan &#x2014; $49/mo</div>' +
-          '<div style="display:flex;flex-direction:column;gap:7px">' + featureHTML + '</div>' +
+        // Pro plan
+        '<div style="background:rgba(92,95,239,0.07);border:1px solid rgba(92,95,239,0.14);border-radius:10px;padding:16px;margin-bottom:12px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+            '<div style="font-size:11px;font-weight:600;color:var(--blue);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase">Pro Plan</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--text)">$49/mo</div>' +
+          '</div>' +
+          '<div style="display:flex;flex-direction:column;gap:5px">' + featureHTML(proFeatures) + '</div>' +
+          '<button onclick="closeUpgradePrompt();startPaddleCheckout(\'pro\')" style="width:100%;margin-top:12px;background:var(--blue);border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans)">Get Pro &#x2192;</button>' +
         '</div>' +
-        '<div style="display:flex;gap:9px">' +
-          '<button onclick="closeUpgradePrompt();startPaddleCheckout(\'pro\')" style="flex:1;background:var(--blue);border:none;border-radius:9px;padding:12px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans);transition:all 0.18s">Upgrade to Pro &#x2192;</button>' +
-          '<button onclick="closeUpgradePrompt()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:9px;padding:12px 16px;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--sans)">Later</button>' +
+        // Private plan
+        '<div style="background:rgba(34,211,165,0.05);border:1px solid rgba(34,211,165,0.15);border-radius:10px;padding:16px;margin-bottom:16px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+            '<div style="font-size:11px;font-weight:600;color:var(--green);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase">Private Plan</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--text)">$99/mo</div>' +
+          '</div>' +
+          '<div style="display:flex;flex-direction:column;gap:5px">' + featureHTML(privateFeatures) + '</div>' +
+          '<button onclick="closeUpgradePrompt();startPaddleCheckout(\'private\')" style="width:100%;margin-top:12px;background:rgba(34,211,165,0.12);border:1px solid rgba(34,211,165,0.25);border-radius:8px;padding:10px;font-size:13px;font-weight:600;color:var(--green);cursor:pointer;font-family:var(--sans)">Get Private &#x2192;</button>' +
         '</div>' +
+        '<button onclick="closeUpgradePrompt()" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--sans)">Maybe later</button>' +
       '</div>' +
     '</div>';
   overlay.addEventListener('click', function(e) { if (e.target === overlay) closeUpgradePrompt(); });
@@ -4368,6 +4388,12 @@ function setBilling(mode) {
   setPrice('price-free-amount',  'price-free-period',  'price-free-year',  'free');
   setPrice('price-pro-amount',   'price-pro-period',   'price-pro-year',   'pro');
   setPrice('price-priv-amount',  'price-priv-period',  'price-priv-year',  'priv');
+
+  // Update button text to reflect current pricing
+  var proBtn = document.getElementById('price-btn-pro');
+  var privBtn = document.getElementById('price-btn-priv');
+  if (proBtn) proBtn.textContent = 'Get Pro — $' + prices.pro[mode] + '/mo';
+  if (privBtn) privBtn.textContent = 'Get Private — $' + prices.priv[mode] + '/mo';
 }
 
 

@@ -1658,7 +1658,7 @@ body.light-mode .kbd-box{background:#fff}
           <li>Live net worth dashboard</li>
           <li>Basic allocation chart</li>
         </ul>
-        <button class="price-btn" onclick="showAuth('signup')">Start Free</button>
+        <button class="price-btn" onclick="selectPlan('free')">Start Free</button>
       </div>
       <div class="price-card popular">
         <div class="price-plan">Pro</div>
@@ -1674,7 +1674,7 @@ body.light-mode .kbd-box{background:#fff}
           <li>Quarterly wealth reports</li>
           <li>JSON data export</li>
         </ul>
-        <button class="price-btn" onclick="showAuth('signup')">Get Pro — $49/mo</button>
+        <button class="price-btn" id="price-btn-pro" onclick="selectPlan('pro')">Get Pro — $49/mo</button>
       </div>
       <div class="price-card">
         <div class="price-plan">Private</div>
@@ -1689,7 +1689,7 @@ body.light-mode .kbd-box{background:#fff}
           <li>PDF report export</li>
           <li>Priority support</li>
         </ul>
-        <button class="price-btn" onclick="showAuth('signup')">Get Private — $99/mo</button>
+        <button class="price-btn" id="price-btn-priv" onclick="selectPlan('private')">Get Private — $99/mo</button>
       </div>
     </div>
   </section>
@@ -1711,7 +1711,7 @@ body.light-mode .kbd-box{background:#fff}
     <div class="section-label" style="margin-bottom:24px">Ready when you are</div>
     <h2>Your exact net worth.<br>Right now.</h2>
     <p style="max-width:400px;margin:0 auto 36px">One dashboard. Every asset class. Portfolio intelligence included. Free to start.</p>
-    <button class="btn-primary-lg" onclick="showAuth('signup')">Get Started Free →</button>
+    <button class="btn-primary-lg" onclick="selectPlan('free')">Get Started Free →</button>
   </section>
 
   <!-- FOOTER -->
@@ -1722,8 +1722,8 @@ body.light-mode .kbd-box{background:#fff}
         <span style="font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:0.3px">Wealth<span style="color:var(--blue)">OS</span></span>
       </div>
       <div class="footer-links">
-        <a onclick="showAuth('login')">Sign In</a>
-        <a onclick="showAuth('signup')" style="color:var(--blue)">Get Started</a>
+        <a onclick="if(currentUser){enterDashboard()}else{showAuth('login')}">Sign In</a>
+        <a onclick="selectPlan('free')" style="color:var(--blue)">Get Started</a>
         <a href="/pricing">Pricing</a>
         <a href="/terms">Terms</a>
         <a href="/privacy">Privacy</a>
