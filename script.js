@@ -1278,24 +1278,37 @@ function goPricing() {
 // ============================================
 // Config: Set your Paddle Price IDs here after creating products in Paddle dashboard
 var PADDLE_CONFIG = {
-  proPriceId:     'pri_01kmjb2sm39eqqybcdzqbt45rh',
-  privatePriceId: 'pri_01kmjb5rsd19dqga99vcxmegda',
-  environment:    'production'
+  proPriceId:          'pri_01kmjb2sm39eqqybcdzqbt45rh',
+  privatePriceId:      'pri_01kmjb5rsd19dqga99vcxmegda',
+  proAnnualPriceId:    '',  // Add Paddle annual price ID when created
+  privateAnnualPriceId:'',  // Add Paddle annual price ID when created
+  environment:         'production'
 };
 
 function startPaddleCheckout(plan) {
   if (!currentUser) {
-    // Not logged in - show auth first, store intended plan
     window._pendingPlan = plan;
     showAuth('signup');
     _showToast('Create an account first, then complete your upgrade.', 'info');
     return;
   }
 
-  var priceId = plan === 'private' ? PADDLE_CONFIG.privatePriceId : PADDLE_CONFIG.proPriceId;
+  // Select correct price ID based on plan + billing mode
+  var isAnnual = (typeof billingMode !== 'undefined' && billingMode === 'annual');
+  var priceId;
 
-  // Annual billing not yet available — always use monthly price IDs
-  if (typeof billingMode !== 'undefined' && billingMode === 'annual') {
+  if (plan === 'private') {
+    priceId = (isAnnual && PADDLE_CONFIG.privateAnnualPriceId)
+      ? PADDLE_CONFIG.privateAnnualPriceId
+      : PADDLE_CONFIG.privatePriceId;
+  } else {
+    priceId = (isAnnual && PADDLE_CONFIG.proAnnualPriceId)
+      ? PADDLE_CONFIG.proAnnualPriceId
+      : PADDLE_CONFIG.proPriceId;
+  }
+
+  // If user selected annual but no annual price exists, notify and use monthly
+  if (isAnnual && !((plan === 'private' ? PADDLE_CONFIG.privateAnnualPriceId : PADDLE_CONFIG.proAnnualPriceId))) {
     _showToast('Annual billing coming soon. Proceeding with monthly pricing.', 'info');
   }
 
@@ -1330,11 +1343,13 @@ function refreshUserPlan() {
   // Re-read plan from Supabase (trusted source - set by webhook)
   var _sb = getSB();
   if (!_sb || !currentUser) return;
+
+  // Source 1: auth user_metadata (set by webhook)
   _sb.auth.getUser().then(function(res) {
     if (!res.data || !res.data.user) return;
     var meta = res.data.user.user_metadata || {};
     if (meta.plan && meta.plan !== currentUser.plan) {
-      console.log('[WealthOS] Plan updated:', currentUser.plan, '->', meta.plan);
+      console.log('[WealthOS] Plan from metadata:', currentUser.plan, '->', meta.plan);
       currentUser.plan = meta.plan;
       settings.plan = meta.plan;
       saveSession(currentUser);
@@ -1343,7 +1358,43 @@ function refreshUserPlan() {
       renderAll();
       _showToast('Plan upgraded to ' + meta.plan.charAt(0).toUpperCase() + meta.plan.slice(1) + '!', 'success');
     }
-  }).catch(function(e) { console.warn('[WealthOS] Plan refresh failed:', e); });
+  }).catch(function(e) { console.warn('[WealthOS] Metadata plan refresh failed:', e); });
+
+  // Source 2: public.users table (may be updated separately)
+  syncPlanFromDB();
+}
+
+function syncPlanFromDB() {
+  var _sb = getSB();
+  if (!_sb || !currentUser || !currentUser.supabaseId) return;
+  _sb.from('users').select('plan, first_name, last_name').eq('id', currentUser.supabaseId).single()
+    .then(function(res) {
+      if (!res.data) return;
+      var dbPlan = res.data.plan;
+      if (dbPlan && dbPlan !== 'free' && dbPlan !== currentUser.plan) {
+        console.log('[WealthOS] Plan from DB:', currentUser.plan, '->', dbPlan);
+        currentUser.plan = dbPlan;
+        settings.plan = dbPlan;
+        saveSession(currentUser);
+        saveUsers();
+        renderAll();
+        if (dbPlan !== 'free') {
+          _showToast('Plan updated to ' + dbPlan.charAt(0).toUpperCase() + dbPlan.slice(1) + '!', 'success');
+        }
+      } else if (dbPlan && dbPlan !== currentUser.plan) {
+        currentUser.plan = dbPlan;
+        settings.plan = dbPlan;
+        saveSession(currentUser);
+        saveUsers();
+      }
+      // Sync name from DB if missing locally
+      if (res.data.first_name && (!currentUser.firstName || currentUser.firstName === currentUser.email.split('@')[0])) {
+        currentUser.firstName = res.data.first_name;
+        if (res.data.last_name) currentUser.lastName = res.data.last_name;
+        saveSession(currentUser);
+        saveUsers();
+      }
+    }).catch(function(e) { console.warn('[WealthOS] DB plan sync failed:', e); });
 }
 
 // Check for upgrade return from Paddle
@@ -1392,7 +1443,7 @@ function showUpgradeMarket() {
   showUpgradePrompt('Market Intelligence', 'Pro includes live sector updates, market sentiment indicators and daily intelligence across six asset classes. From $49/mo.');
 }
 function showUpgradePanic() {
-  showUpgradePrompt('Portfolio Stress Testing', 'Simulate a severe market downturn to see your stressed net worth, total drawdown and cash runway. Available on the Private plan at $99/mo.');
+  showPrivateUpgradePrompt('Portfolio Stress Testing', 'Simulate a severe market downturn to see your stressed net worth, total drawdown and cash runway. Available exclusively on the Private plan.');
 }
 
 // ========================================
@@ -1445,9 +1496,9 @@ function showLanding() {
     if (ctaBtn) { ctaBtn.textContent = 'Open Dashboard'; ctaBtn.setAttribute('onclick','enterDashboard()'); }
     if (heroBtn) { heroBtn.textContent = 'Open Dashboard \u2192'; heroBtn.setAttribute('onclick','enterDashboard()'); }
   } else {
-    if (signinBtn) { signinBtn.style.display = ''; signinBtn.textContent = 'Sign In'; }
-    if (ctaBtn) { ctaBtn.textContent = 'Get Started Free'; ctaBtn.setAttribute('onclick',"showAuth('signup')"); }
-    if (heroBtn) { heroBtn.textContent = 'Get Started Free \u2192'; heroBtn.setAttribute('onclick',"showAuth('signup')"); }
+    if (signinBtn) { signinBtn.style.display = ''; signinBtn.textContent = 'Log In'; }
+    if (ctaBtn) { ctaBtn.textContent = 'Get Started Free'; ctaBtn.setAttribute('onclick',"selectPlan('free')"); }
+    if (heroBtn) { heroBtn.textContent = 'Get Started Free \u2192'; heroBtn.setAttribute('onclick',"selectPlan('free')"); }
   }
 }
 function showAuth(mode) {
@@ -1488,9 +1539,9 @@ function doLogin() {
 
     _sb.auth.signInWithPassword({ email: email, password: pw })
       .then(function(res) {
-        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; }
+        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
         if (res.error) {
-          if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; }
+          if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
           doLoginLocal(email, pw, err, suc);
           return;
         }
@@ -1513,11 +1564,22 @@ function doLogin() {
           saveUsers();
         }
         saveSession(localUser);
+        // Sync plan from public.users table (may differ from metadata)
+        setTimeout(syncPlanFromDB, 500);
+        // Ensure profile row exists in public.users (won't overwrite existing plan)
+        if (localUser.supabaseId && _sb) {
+          _sb.from('users').upsert({
+            id: localUser.supabaseId,
+            email: email,
+            first_name: localUser.firstName || email.split('@')[0],
+            last_name: localUser.lastName || ''
+          }, { onConflict: 'id', ignoreDuplicates: true }).catch(function(){});
+        }
         if (suc) { suc.textContent = 'Welcome back, ' + (localUser.firstName || 'User') + '!'; suc.style.display = 'block'; }
         setTimeout(function() { enterDashboard(); }, 600);
       })
       .catch(function() {
-        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Sign In'; }
+        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
         // Network error -- try local
         doLoginLocal(email, pw, err, suc);
       });
@@ -1604,6 +1666,20 @@ function doSignup() {
       saveUsers();
       saveSession(u);
       if (btn) { btn.disabled = false; btn.textContent = origBtnText; }
+
+      // Insert profile into public.users table
+      if (u.supabaseId && _sb) {
+        _sb.from('users').upsert({
+          id: u.supabaseId,
+          email: email,
+          first_name: fname,
+          last_name: lname,
+          plan: 'free'
+        }, { onConflict: 'id' }).then(function(r) {
+          if (r.error) console.warn('[WealthOS] Profile insert error:', r.error.message);
+          else console.log('[WealthOS] Profile saved to public.users');
+        }).catch(function(e) { console.warn('[WealthOS] Profile insert failed:', e); });
+      }
 
       // Enter dashboard
       enterDashboard();
@@ -1733,8 +1809,8 @@ function doLogout() {
   // Restore nav buttons to default state
   var signinBtn = document.querySelector('.lnav-signin');
   var ctaBtn    = document.querySelector('.lnav-cta');
-  if (signinBtn) { signinBtn.style.display = ''; signinBtn.textContent = 'Sign In'; signinBtn.setAttribute('onclick', "showAuth('login')"); }
-  if (ctaBtn)    { ctaBtn.textContent = 'Get Started Free'; ctaBtn.setAttribute('onclick', "showAuth('signup')"); }
+  if (signinBtn) { signinBtn.style.display = ''; signinBtn.textContent = 'Log In'; signinBtn.setAttribute('onclick', "showAuth('login')"); }
+  if (ctaBtn)    { ctaBtn.textContent = 'Get Started Free'; ctaBtn.setAttribute('onclick', "selectPlan('free')"); }
   historyPeriod = 30; bustCache(''); _rp = false; showLanding();
   } catch(e) { console.error('[WealthOS] doLogout error:', e); clearSession(); showLanding(); }
 }
@@ -2146,6 +2222,9 @@ function enterDashboard() {
       try { updateBadgeCount(); } catch(e) {}
       renderAll();
 
+      // Sync plan from public.users table (ensures DB plan is used, not stale local)
+      try { syncPlanFromDB(); } catch(e) {}
+
       // CRITICAL: Independent AI section renderer
       // Runs SEPARATELY from overview chain to guarantee AI sections always render
       function _renderAISections() {
@@ -2263,7 +2342,7 @@ function _injectComingSoon() {
     container.style.cssText = 'margin-top:auto;padding:8px 6px 12px;border-top:1px solid rgba(255,255,255,0.06)';
 
     var label = document.createElement('div');
-    label.style.cssText = 'font-size:9px;font-weight:600;letter-spacing:0.1em;color:var(--muted2);padding:6px 12px 4px;font-family:var(--mono);text-transform:uppercase';
+    label.style.cssText = 'font-size:9px;font-weight:600;letter-spacing:0.1em;color:var(--muted);padding:8px 12px 4px;font-family:var(--mono);text-transform:uppercase';
     label.textContent = 'Coming Soon';
     container.appendChild(label);
 
@@ -2275,10 +2354,10 @@ function _injectComingSoon() {
 
     items.forEach(function(item) {
       var el = document.createElement('div');
-      el.style.cssText = 'display:flex;align-items:center;gap:9px;padding:6px 12px;margin:1px 0;font-size:12px;color:var(--muted2);opacity:0.5;cursor:default;border-radius:8px';
-      el.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;opacity:0.5">' + item.icon + '</span>' +
+      el.style.cssText = 'display:flex;align-items:center;gap:9px;padding:7px 12px;margin:2px 0;font-size:12px;color:var(--muted);opacity:0.7;cursor:default;border-radius:8px;transition:opacity 0.2s';
+      el.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;opacity:0.7">' + item.icon + '</span>' +
         '<span>' + item.text + '</span>' +
-        '<span style="margin-left:auto;font-size:8px;font-weight:700;letter-spacing:0.08em;background:rgba(92,95,239,0.1);color:var(--blue);padding:2px 6px;border-radius:4px;font-family:var(--mono)">SOON</span>';
+        '<span style="margin-left:auto;font-size:8px;font-weight:700;letter-spacing:0.08em;background:rgba(92,95,239,0.15);color:var(--blue);padding:3px 8px;border-radius:4px;font-family:var(--mono);border:1px solid rgba(92,95,239,0.2)">SOON</span>';
       el.title = item.text + ' - Coming Soon';
       container.appendChild(el);
     });
@@ -4286,6 +4365,47 @@ function showUpgradePrompt(title, desc) {
   overlay.addEventListener('click', function(e) { if (e.target === overlay) closeUpgradePrompt(); });
   document.body.appendChild(overlay);
 }
+// -- PRIVATE-ONLY UPGRADE PROMPT --
+function showPrivateUpgradePrompt(title, desc) {
+  closeUpgradePrompt();
+  var features = ['Everything in Pro','Portfolio stress testing','Multi-user access','Advisor sharing portal','PDF report export','Priority support'];
+  var checkSVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22D3A5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  var featureHTML = features.map(function(f) {
+    return '<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)">' + checkSVG + f + '</div>';
+  }).join('');
+  var overlay = document.createElement('div');
+  overlay.className = 'modal-overlay show';
+  overlay.id = 'upgrade-prompt';
+  overlay.innerHTML =
+    '<div class="modal" style="max-width:420px">' +
+      '<div class="modal-h" style="border-bottom:none;padding-bottom:8px">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<div style="width:32px;height:32px;border-radius:9px;background:rgba(34,211,165,0.12);border:1px solid rgba(34,211,165,0.2);display:flex;align-items:center;justify-content:center;color:var(--green)">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
+          '</div>' +
+          '<div style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text)">Private Feature</div>' +
+        '</div>' +
+        '<button class="modal-x" onclick="closeUpgradePrompt()">&#x2715;</button>' +
+      '</div>' +
+      '<div class="modal-body" style="padding-top:8px">' +
+        '<div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:8px">' + title + '</div>' +
+        '<div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">' + desc + '</div>' +
+        '<div style="background:rgba(34,211,165,0.05);border:1px solid rgba(34,211,165,0.15);border-radius:10px;padding:16px;margin-bottom:16px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+            '<div style="font-size:11px;font-weight:600;color:var(--green);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase">Private Plan</div>' +
+            '<div style="font-size:13px;font-weight:700;color:var(--text)">$99/mo</div>' +
+          '</div>' +
+          '<div style="display:flex;flex-direction:column;gap:5px">' + featureHTML + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:9px">' +
+          '<button onclick="closeUpgradePrompt();startPaddleCheckout(\'private\')" style="flex:1;background:var(--green);border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans)">Get Private &#x2192;</button>' +
+          '<button onclick="closeUpgradePrompt()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:11px 16px;font-size:13px;color:var(--muted);cursor:pointer;font-family:var(--sans)">Later</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeUpgradePrompt(); });
+  document.body.appendChild(overlay);
+}
 // -- ASSET LIMIT BANNER --
 function renderAssetLimitBanner() {
   var plan = settings.plan || (currentUser ? currentUser.plan : 'free') || 'free';
@@ -4508,6 +4628,30 @@ function selectPlan(plan, el) {
       window._pendingPlan = plan;
     }
     showAuth('signup');
+    // Pre-select the chosen plan in signup form
+    setTimeout(function() {
+      var dd = document.getElementById('signup-plan');
+      if (dd && plan) dd.value = plan;
+      // Show plan badge above signup
+      var badge = document.getElementById('signup-plan-badge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'signup-plan-badge';
+        badge.style.cssText = 'text-align:center;margin-bottom:12px;font-size:11px;font-family:var(--mono);font-weight:600;letter-spacing:0.05em';
+        var form = document.getElementById('auth-signup');
+        if (form) {
+          var card = form.querySelector('.auth-card');
+          if (card) card.insertBefore(badge, card.querySelector('.auth-body'));
+        }
+      }
+      if (badge && (plan === 'pro' || plan === 'private')) {
+        var label = plan === 'private' ? 'Private' : 'Pro';
+        var color = plan === 'private' ? '#22D3A5' : '#5C5FEF';
+        badge.innerHTML = '<span style="background:' + color + '15;color:' + color + ';padding:4px 14px;border-radius:20px;border:1px solid ' + color + '30">' + label + ' Plan Selected</span>';
+      } else if (badge) {
+        badge.innerHTML = '';
+      }
+    }, 100);
     return;
   }
 
@@ -4515,25 +4659,20 @@ function selectPlan(plan, el) {
   var userPlan = (currentUser.plan || 'free').toLowerCase();
 
   if (plan === 'free') {
-    // Free -> dashboard
     enterDashboard();
     return;
   }
 
-  // Pro or Private
   if (plan === 'pro' || plan === 'private') {
-    // Already subscribed to this plan or higher -> dashboard
     if (userPlan === plan || (userPlan === 'private' && plan === 'pro')) {
       enterDashboard();
       _showToast('You already have the ' + userPlan.charAt(0).toUpperCase() + userPlan.slice(1) + ' plan!', 'info');
       return;
     }
-    // Not subscribed -> payment
     startPaddleCheckout(plan);
     return;
   }
 
-  // Fallback
   var hidden = document.getElementById('signup-plan');
   if (hidden) hidden.value = plan;
 }
@@ -4798,7 +4937,7 @@ function rMilestoneList() {
 function openShareModal() {
   var plan = settings.plan || (currentUser ? currentUser.plan : 'free') || 'free';
   if (plan !== 'private') {
-    showUpgradePrompt('Advisor Sharing', 'Share a read-only view of your portfolio with a financial advisor. Available on the Private plan at $99/mo.');
+    showPrivateUpgradePrompt('Advisor Sharing', 'Share a read-only view of your portfolio with a financial advisor. Available exclusively on the Private plan.');
     return;
   }
   var m = document.getElementById('share-modal');
@@ -5018,6 +5157,8 @@ function checkShareParam() {
         }
         saveSession(localUser);
         currentUser = localUser;
+        // Sync plan from public.users table
+        setTimeout(syncPlanFromDB, 300);
         enterDashboard();
       } else {
         // No cloud session -- check local session as fallback
