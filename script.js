@@ -1103,7 +1103,7 @@ function buildWealthOSKnowledge() {
     "",
     "COMING SOON:",
     "- Live price sync for stocks (Alpha Vantage API) and crypto (CoinGecko API)",
-    "- Stripe payment integration for Pro/Private plan billing",
+    "- Paddle payment integration for Pro/Private plan billing",
     "- Brokerage sync (Schwab, Fidelity, Interactive Brokers)",
     "",
     "=== END PLATFORM KNOWLEDGE ===",
@@ -1533,30 +1533,36 @@ function doLogin() {
   // -- Try Supabase first (cloud auth) --
   var _sb = getSB();
   if (_sb) {
-    // Show loading state
-    var loginBtn = document.querySelector('#auth-login .btn-p');
-    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Signing in...'; }
+    // Show loading state (fixed selector: .auth-submit not .btn-p)
+    var loginBtn = document.querySelector('#auth-login .auth-submit');
+    var origText = loginBtn ? loginBtn.textContent : '';
+    if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Logging in...'; }
 
     _sb.auth.signInWithPassword({ email: email, password: pw })
       .then(function(res) {
-        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
         if (res.error) {
-          if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
+          if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = origText; }
           // Show the actual Supabase error — do NOT fall back to local
           var msg = res.error.message || 'Login failed.';
-          if (msg.toLowerCase().indexOf('invalid') >= 0 || msg.toLowerCase().indexOf('credentials') >= 0) {
-            showErr(err, 'Invalid email or password. Please try again.');
-          } else if (msg.toLowerCase().indexOf('email not confirmed') >= 0) {
-            showErr(err, 'Please confirm your email first. Check your inbox.');
+          var msgLow = msg.toLowerCase();
+
+          // Supabase returns "Invalid login credentials" for BOTH wrong password AND unconfirmed email
+          if (msgLow.indexOf('invalid') >= 0 || msgLow.indexOf('credentials') >= 0) {
+            showErr(err, 'Invalid email or password. If you just signed up, please check your inbox and confirm your email first.');
+          } else if (msgLow.indexOf('email not confirmed') >= 0) {
+            showErr(err, 'Please confirm your email first. Check your inbox for a confirmation link.');
+          } else if (msgLow.indexOf('rate') >= 0 || msgLow.indexOf('limit') >= 0) {
+            showErr(err, 'Too many attempts. Please wait a moment and try again.');
           } else {
             showErr(err, msg);
           }
           return;
         }
-        // Supabase success
+        // Supabase success — user is authenticated in the cloud
         var sbUser = res.data.user;
         var localUser = users.find(function(u) { return u.email === email || u.supabaseId === sbUser.id; });
         if (!localUser) {
+          // New device — create local user from cloud data
           var meta = sbUser.user_metadata || {};
           localUser = {
             id: 'u_' + Date.now(),
@@ -1585,23 +1591,19 @@ function doLogin() {
             last_name: localUser.lastName || ''
           }, { onConflict: 'id', ignoreDuplicates: true }).catch(function(){});
         }
+        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = origText; }
         if (suc) { suc.textContent = 'Welcome back, ' + (localUser.firstName || 'User') + '!'; suc.style.display = 'block'; }
         setTimeout(function() { enterDashboard(); }, 600);
       })
       .catch(function(e) {
-        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
-        // Network error — try local as offline fallback
-        console.warn('[WealthOS] Supabase login network error, trying local:', e);
-        var localUser = users.find(function(x) { return x.email === email; });
-        if (localUser) {
-          doLoginLocal(email, pw, err, suc);
-        } else {
-          showErr(err, 'Unable to connect. Please check your internet and try again.');
-        }
+        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = origText; }
+        // Network error — Supabase unreachable
+        console.warn('[WealthOS] Supabase login network error:', e);
+        showErr(err, 'Unable to connect to the server. Please check your internet connection and try again.');
       });
   } else {
-    // Supabase not available -- local only
-    doLoginLocal(email, pw, err, suc);
+    // Supabase library not loaded (ad blocker, CDN failure, etc.)
+    showErr(err, 'Authentication service is loading. Please refresh the page and try again.');
   }
 }
 
