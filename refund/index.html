@@ -2,102 +2,45 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#0A0A0F;--surface:#141419;--surface2:#1A1A24;
-  --border:#242430;--border2:#2E2E3E;
-  --text:#F2F2FA;--muted:#8A8FAF;--muted2:#636382;
-  --blue:#5C5FEF;--green:#22D3A5;--red:#F05C71;--amber:#E8A030;
-  --sans:"IBM Plex Sans",sans-serif;--mono:"IBM Plex Mono",monospace
-}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh}
-a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--border);background:rgba(10,10,15,.92);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logomark{width:32px;height:32px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0}
-.logoname{font-size:16px;font-weight:700;color:var(--text)}.logoname span{color:var(--muted)}
-.nav-links{display:flex;gap:24px;align-items:center}
-.nav-link{color:var(--muted);font-size:14px;transition:color .15s}.nav-link:hover{color:var(--text);text-decoration:none}
-.btn{display:inline-block;padding:9px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:var(--sans)}
-.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#4a4dcc;text-decoration:none}
-.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}.btn-outline:hover{border-color:var(--blue);color:var(--blue);text-decoration:none}
-.container{max-width:860px;margin:0 auto;padding:64px 24px}
-h1{font-size:38px;font-weight:700;letter-spacing:-.6px;line-height:1.2;margin-bottom:14px}
-h2{font-size:19px;font-weight:600;color:var(--text);margin:40px 0 10px}
-h3{font-size:14px;font-weight:600;color:var(--text);margin:18px 0 5px}
-p{color:var(--muted);margin-bottom:14px}
-ul,ol{padding-left:20px;margin-bottom:14px}
-li{color:var(--muted);margin-bottom:5px}
-strong{color:var(--text);font-weight:600}
-.subtitle{font-size:17px;color:var(--muted);margin-bottom:40px}
-hr{border:none;border-top:1px solid var(--border);margin:40px 0}
-.tag{display:inline-block;font-size:11px;font-weight:600;font-family:var(--mono);letter-spacing:.07em;padding:3px 9px;border-radius:4px;margin-bottom:14px;text-transform:uppercase}
-.tag-green{background:rgba(34,211,165,.1);color:var(--green)}
-.tag-blue{background:rgba(92,95,239,.1);color:var(--blue)}
-.tag-amber{background:rgba(232,160,48,.1);color:var(--amber)}
-footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;gap:20px;flex-wrap:wrap;justify-content:space-between;align-items:center}
-.footer-links{display:flex;gap:20px;flex-wrap:wrap}
-.footer-links a,.footer-copy{font-size:13px;color:var(--muted2)}.footer-links a:hover{color:var(--text)}
-@media(max-width:600px){nav{padding:14px 20px;flex-wrap:wrap;gap:12px}.container{padding:40px 20px}h1{font-size:27px}footer{padding:24px 20px;flex-direction:column;align-items:flex-start}}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Refund Policy — WealthOS</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0a0f;color:#d1d1db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.8;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:680px;margin:0 auto;padding:60px 24px 80px}
+  .back{display:inline-flex;align-items:center;gap:6px;color:#71717a;font-size:13px;text-decoration:none;margin-bottom:32px;transition:color 0.2s}
+  .back:hover{color:#d1d1db}
+  h1{font-size:28px;font-weight:700;color:#f2f2fa;letter-spacing:-0.5px;margin-bottom:8px}
+  .updated{font-size:12px;color:#71717a;margin-bottom:36px}
+  h2{font-size:16px;font-weight:600;color:#f2f2fa;margin-top:32px;margin-bottom:12px}
+  p{font-size:14px;color:#a1a1b5;margin-bottom:16px}
+  a{color:#5C5FEF}
+  .note{background:rgba(92,95,239,0.08);border:1px solid rgba(92,95,239,0.2);border-radius:10px;padding:16px 20px;margin:24px 0;font-size:13px;color:#b4b4ff;line-height:1.7}
+</style>
 </head>
-<body><nav>
-  <a class="logo" href="/">
-    <div class="logomark">W</div>
-    <div class="logoname">Wealth<span>OS</span></div>
-  </a>
-  <div class="nav-links">
-    <a class="nav-link" href="/pricing">Pricing</a>
-    <a class="nav-link" href="/">Dashboard</a>
-    <a class="btn btn-primary" href="/">Get Started Free</a>
-  </div>
-</nav>
-<div class="container">
-  <span class="tag tag-amber">Billing</span>
+<body>
+<div class="wrap">
+  <a href="/" class="back">← Back to WealthOS</a>
   <h1>Refund Policy</h1>
-  <p class="subtitle">Last updated: 19 March 2026</p>
+  <p class="updated">Last updated: April 2026</p>
 
-  <p>We want you to be satisfied with WealthOS. This policy explains when and how you can request a refund.</p>
-
-  <hr>
-
-  <h2>7-Day Money-Back Guarantee</h2>
-  <p>If you subscribe to a paid plan (Pro or Private) and are not satisfied, you may request a full refund within <strong>7 days</strong> of your initial payment. No questions asked.</p>
-  <ul>
-    <li>The 7-day window begins from the date of your first charge.</li>
-    <li>This applies to new subscriptions only, not renewals.</li>
-    <li>One refund per customer.</li>
-  </ul>
-
-  <h2>Renewal Charges</h2>
-  <p>Monthly renewal charges are generally non-refundable. If you forgot to cancel before your renewal date, contact us within <strong>48 hours</strong> of the charge and we will review your request on a case-by-case basis.</p>
+  <h2>14-Day Refund Policy</h2>
+  <p>All purchases made through WealthOS are eligible for a full refund within 14 days of the purchase date. No conditions apply. If you request a refund within this period, you will receive a complete refund of the amount paid.</p>
 
   <h2>How to Request a Refund</h2>
-  <ol>
-    <li>Email us at <a href="/cdn-cgi/l/email-protection#4d2f24212124232a0d3a282c213925223e632c3d3d"><span class="__cf_email__" data-cfemail="debcb7b2b2b7b0b99ea9bbbfb2aab6b1adf0bfaeae">[email&#160;protected]</span></a> with the subject line "Refund Request".</li>
-    <li>Include the email address associated with your account.</li>
-    <li>We will respond within 2 business days.</li>
-    <li>Approved refunds are processed within 5–10 business days depending on your bank or card provider.</li>
-  </ol>
+  <p>To request a refund, contact us at <a href="mailto:support@getwealthos.app">support@getwealthos.app</a> within 14 days of your purchase date. Refunds are processed by Paddle, our Merchant of Record, and will be returned to your original payment method within 5–10 business days.</p>
 
-  <h2>Non-Refundable Situations</h2>
-  <ul>
-    <li>Refund requests made more than 7 days after the initial charge.</li>
-    <li>Accounts terminated for violating our <a href="/terms">Terms of Service</a>.</li>
-    <li>Partial-month refunds for mid-cycle cancellations.</li>
-  </ul>
+  <h2>Subscription Cancellation</h2>
+  <p>You may cancel your subscription at any time. Upon cancellation, you will retain access to your paid features until the end of your current billing period. No further charges will be made after cancellation.</p>
 
-  <h2>Free Plan</h2>
-  <p>The free plan involves no payment, so no refund applies.</p>
+  <h2>Merchant of Record</h2>
+  <p>All payments are processed by Paddle.com Market Limited (for customers outside the USA) or Paddle.com Inc (for customers in the USA), our Merchant of Record. Paddle handles all billing, tax calculation, invoicing, and refund processing on our behalf.</p>
 
-  <h2>Cancelling Your Subscription</h2>
-  <p>You can cancel your subscription at any time from your account settings. Cancellation stops future billing. Your access continues until the end of the current billing period.</p>
+  <div class="note">
+    All WealthOS subscriptions purchased through Paddle are covered by this 14-day refund policy. The refund window begins on the date of each payment.
+  </div>
 
-  <h2>Contact</h2>
-  <p>For billing questions or refund requests: <a href="/cdn-cgi/l/email-protection#a8cac1c4c4c1c6cfe8dfcdc9c4dcc0c7db86c9d8d8"><span class="__cf_email__" data-cfemail="1c7e75707075727b5c6b797d706874736f327d6c6c">[email&#160;protected]</span></a></p>
+  <p style="margin-top:32px;font-size:12px;color:#71717a">WealthOSIntel · <a href="/terms" style="color:#71717a">Terms</a> · <a href="/privacy" style="color:#71717a">Privacy</a> · <a href="/" style="color:#71717a">Home</a></p>
 </div>
-<footer>
+</body>
+</html>

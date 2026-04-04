@@ -2,139 +2,95 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#0A0A0F;--surface:#141419;--surface2:#1A1A24;
-  --border:#242430;--border2:#2E2E3E;
-  --text:#F2F2FA;--muted:#8A8FAF;--muted2:#636382;
-  --blue:#5C5FEF;--green:#22D3A5;--red:#F05C71;--amber:#E8A030;
-  --sans:"IBM Plex Sans",sans-serif;--mono:"IBM Plex Mono",monospace
-}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.7;min-height:100vh}
-a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--border);background:rgba(10,10,15,.92);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logomark{width:32px;height:32px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0}
-.logoname{font-size:16px;font-weight:700;color:var(--text)}.logoname span{color:var(--muted)}
-.nav-links{display:flex;gap:24px;align-items:center}
-.nav-link{color:var(--muted);font-size:14px;transition:color .15s}.nav-link:hover{color:var(--text);text-decoration:none}
-.btn{display:inline-block;padding:9px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;border:none;font-family:var(--sans)}
-.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#4a4dcc;text-decoration:none}
-.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}.btn-outline:hover{border-color:var(--blue);color:var(--blue);text-decoration:none}
-.container{max-width:860px;margin:0 auto;padding:64px 24px}
-h1{font-size:38px;font-weight:700;letter-spacing:-.6px;line-height:1.2;margin-bottom:14px}
-h2{font-size:19px;font-weight:600;color:var(--text);margin:40px 0 10px}
-h3{font-size:14px;font-weight:600;color:var(--text);margin:18px 0 5px}
-p{color:var(--muted);margin-bottom:14px}
-ul,ol{padding-left:20px;margin-bottom:14px}
-li{color:var(--muted);margin-bottom:5px}
-strong{color:var(--text);font-weight:600}
-.subtitle{font-size:17px;color:var(--muted);margin-bottom:40px}
-hr{border:none;border-top:1px solid var(--border);margin:40px 0}
-.tag{display:inline-block;font-size:11px;font-weight:600;font-family:var(--mono);letter-spacing:.07em;padding:3px 9px;border-radius:4px;margin-bottom:14px;text-transform:uppercase}
-.tag-green{background:rgba(34,211,165,.1);color:var(--green)}
-.tag-blue{background:rgba(92,95,239,.1);color:var(--blue)}
-.tag-amber{background:rgba(232,160,48,.1);color:var(--amber)}
-footer{border-top:1px solid var(--border);padding:28px 40px;display:flex;gap:20px;flex-wrap:wrap;justify-content:space-between;align-items:center}
-.footer-links{display:flex;gap:20px;flex-wrap:wrap}
-.footer-links a,.footer-copy{font-size:13px;color:var(--muted2)}.footer-links a:hover{color:var(--text)}
-@media(max-width:600px){nav{padding:14px 20px;flex-wrap:wrap;gap:12px}.container{padding:40px 20px}h1{font-size:27px}footer{padding:24px 20px;flex-direction:column;align-items:flex-start}}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Privacy Policy — WealthOS</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0a0f;color:#d1d1db;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.8;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:680px;margin:0 auto;padding:60px 24px 80px}
+  .back{display:inline-flex;align-items:center;gap:6px;color:#71717a;font-size:13px;text-decoration:none;margin-bottom:32px;transition:color 0.2s}
+  .back:hover{color:#d1d1db}
+  h1{font-size:28px;font-weight:700;color:#f2f2fa;letter-spacing:-0.5px;margin-bottom:8px}
+  .updated{font-size:12px;color:#71717a;margin-bottom:36px}
+  h2{font-size:16px;font-weight:600;color:#f2f2fa;margin-top:32px;margin-bottom:12px}
+  p{font-size:14px;color:#a1a1b5;margin-bottom:16px}
+  ul{margin:0 0 16px 20px}
+  li{font-size:14px;color:#a1a1b5;margin-bottom:6px}
+  a{color:#5C5FEF}
+  .note{background:rgba(34,211,165,0.06);border:1px solid rgba(34,211,165,0.18);border-radius:10px;padding:16px 20px;margin:24px 0;font-size:13px;color:#8de8cc;line-height:1.7}
+</style>
 </head>
-<body><nav>
-  <a class="logo" href="/">
-    <div class="logomark">W</div>
-    <div class="logoname">Wealth<span>OS</span></div>
-  </a>
-  <div class="nav-links">
-    <a class="nav-link" href="/pricing">Pricing</a>
-    <a class="nav-link" href="/">Dashboard</a>
-    <a class="btn btn-primary" href="/">Get Started Free</a>
-  </div>
-</nav>
-<div class="container">
-  <span class="tag tag-blue">Legal</span>
+<body>
+<div class="wrap">
+  <a href="/" class="back">← Back to WealthOS</a>
   <h1>Privacy Policy</h1>
-  <p class="subtitle">Last updated: 19 March 2026</p>
+  <p class="updated">Last updated: April 2026</p>
 
-  <p>WealthOS takes your privacy seriously. This policy explains what data we collect, how we use it, and your rights as a user.</p>
+  <div class="note">WealthOS is designed with privacy as a core principle. We do not require bank connections, do not sell your data, and do not share your information with third parties for marketing purposes.</div>
 
-  <hr>
+  <h2>1. Who We Are</h2>
+  <p>WealthOS is operated by WealthOSIntel ("we", "us", "our"). This privacy policy explains how we collect, use, and protect your information when you use WealthOS at getwealthos.app.</p>
 
-  <h2>1. Data We Collect</h2>
-  <h3>Account data</h3>
+  <h2>2. Data We Collect</h2>
+  <p>We collect only the minimum data necessary to provide the service:</p>
   <ul>
-    <li>Email address (required for account creation)</li>
-    <li>Name (optional, used for personalisation)</li>
-    <li>Password (hashed — we never store your password in plaintext)</li>
-  </ul>
-  <h3>Portfolio data</h3>
-  <ul>
-    <li>Assets you manually enter (asset names, values, quantities)</li>
-    <li>Financial goals and settings you configure</li>
-    <li>Portfolio history snapshots generated by the app</li>
-  </ul>
-  <h3>Usage data</h3>
-  <ul>
-    <li>Pages visited and features used (aggregated, anonymised)</li>
-    <li>Device type and browser (for compatibility purposes)</li>
-    <li>Approximate location (country-level only, derived from IP)</li>
+    <li><b>Account information:</b> Email address, first name, and last name (provided during signup)</li>
+    <li><b>Portfolio data:</b> Asset names, values, cost basis, categories, and notes (entered by you)</li>
+    <li><b>Usage data:</b> Basic analytics such as login timestamps and feature usage</li>
+    <li><b>Payment data:</b> Processed entirely by Paddle (our Merchant of Record). We do not store credit card numbers, bank details, or billing addresses.</li>
   </ul>
 
-  <h2>2. How We Use Your Data</h2>
+  <h2>3. Data We Do NOT Collect</h2>
   <ul>
-    <li>To provide and operate the WealthOS platform</li>
-    <li>To send account-related emails (confirmation, password reset, billing)</li>
-    <li>To improve the platform based on aggregated usage patterns</li>
-    <li>To process payments and manage subscriptions</li>
-    <li>To comply with legal obligations</li>
-  </ul>
-  <p>We do <strong>not</strong> sell your data. We do <strong>not</strong> use your financial data for advertising.</p>
-
-  <h2>3. Data Storage &amp; Security</h2>
-  <ul>
-    <li>Data is stored in secure cloud infrastructure (Supabase, hosted on AWS).</li>
-    <li>Row Level Security ensures your data is mathematically isolated from other users.</li>
-    <li>All data is encrypted in transit (TLS) and at rest (AES-256).</li>
-    <li>We retain your data for as long as your account is active. You can request deletion at any time.</li>
+    <li>Bank account credentials or passwords</li>
+    <li>Brokerage login information</li>
+    <li>Social security numbers or government IDs</li>
+    <li>Location data or IP address tracking</li>
   </ul>
 
-  <h2>4. Third-Party Services</h2>
-  <p>We use the following third-party services to operate WealthOS:</p>
+  <h2>4. How We Use Your Data</h2>
   <ul>
-    <li><strong>Supabase</strong> — database and authentication</li>
-    <li><strong>Stripe</strong> — payment processing (we do not store card details)</li>
-    <li><strong>Anthropic (Claude)</strong> — AI portfolio intelligence (your portfolio data is sent to generate responses; it is not stored by Anthropic)</li>
-    <li><strong>Yahoo Finance / CoinGecko</strong> — live market price data (no personal data is shared)</li>
-    <li><strong>Vercel</strong> — hosting and serverless functions</li>
+    <li>To provide and maintain the WealthOS service</li>
+    <li>To generate portfolio analytics and AI-powered insights</li>
+    <li>To process your subscription through Paddle</li>
+    <li>To send important account notifications (e.g., password reset)</li>
   </ul>
-  <p>Each third party is bound by their own privacy policy and data protection obligations.</p>
+  <p>We do not sell, rent, or share your personal data with third parties for marketing or advertising purposes.</p>
 
-  <h2>5. Your Rights</h2>
+  <h2>5. AI Data Processing</h2>
+  <p>When you use the AI chat feature, your portfolio data is sent to Anthropic's Claude API to generate personalized insights. This data is processed in real-time and is not stored by Anthropic beyond the duration of the request. We do not use your data to train AI models.</p>
+
+  <h2>6. Payment Processing</h2>
+  <p>All payments are processed by Paddle.com Market Limited (for customers outside the USA) or Paddle.com Inc (for customers in the USA), who serves as our Merchant of Record. Paddle collects and processes your payment information in accordance with their own privacy policy. WealthOS never has access to your credit card details.</p>
+
+  <h2>7. Data Storage</h2>
+  <p>Your account and portfolio data is stored in Supabase (PostgreSQL database) with Row Level Security enabled, ensuring that your data is accessible only by you. Data in transit is encrypted via HTTPS/TLS. Data is cached locally in your browser for performance and offline access.</p>
+
+  <h2>8. Data Retention</h2>
+  <p>We retain your data for as long as your account is active. If you delete your account, we will remove your personal data within 30 days. Some data may be retained in backups for up to 90 days.</p>
+
+  <h2>9. Your Rights</h2>
+  <p>You have the right to:</p>
   <ul>
-    <li><strong>Access:</strong> Request a copy of your data at any time.</li>
-    <li><strong>Correction:</strong> Update your account information in settings.</li>
-    <li><strong>Deletion:</strong> Delete your account and all associated data from account settings.</li>
-    <li><strong>Portability:</strong> Export your portfolio data from the Reports section.</li>
+    <li>Access your data (available through the dashboard and export feature)</li>
+    <li>Correct inaccurate data (editable through the dashboard)</li>
+    <li>Delete your data (contact support@getwealthos.app)</li>
+    <li>Export your data (JSON export available in the dashboard)</li>
   </ul>
 
-  <h2>6. Cookies</h2>
-  <p>WealthOS uses minimal cookies for authentication session management only. We do not use advertising or tracking cookies.</p>
+  <h2>10. Cookies</h2>
+  <p>WealthOS uses essential cookies and localStorage for authentication session management. We do not use tracking cookies, advertising cookies, or third-party analytics services.</p>
 
-  <h2>7. Children's Privacy</h2>
-  <p>WealthOS is not intended for users under the age of 18. We do not knowingly collect data from minors.</p>
+  <h2>11. Children</h2>
+  <p>WealthOS is not intended for use by anyone under the age of 18. We do not knowingly collect data from minors.</p>
 
-  <h2>8. Changes to This Policy</h2>
-  <p>We will notify you by email or in-app notice if we make material changes to this Privacy Policy.</p>
+  <h2>12. Changes</h2>
+  <p>We may update this privacy policy from time to time. Material changes will be communicated via email or through the application.</p>
 
-  <h2>9. Contact</h2>
-  <p>For privacy-related requests or questions, contact us at <a href="/cdn-cgi/l/email-protection#cdbdbfa4bbacaeb48dbaa8aca1b9a5a2bee3acbdbd"><span class="__cf_email__" data-cfemail="d8a8aab1aeb9bba198afbdb9b4acb0b7abf6b9a8a8">[email&#160;protected]</span></a>.</p>
+  <h2>13. Contact</h2>
+  <p>For privacy inquiries, contact us at <a href="mailto:support@getwealthos.app">support@getwealthos.app</a>.</p>
+
+  <p style="margin-top:32px;font-size:12px;color:#71717a">WealthOSIntel · <a href="/terms" style="color:#71717a">Terms</a> · <a href="/refund" style="color:#71717a">Refund Policy</a> · <a href="/" style="color:#71717a">Home</a></p>
 </div>
-<footer>
-  <span class="footer-copy">&copy; 2026 WealthOS. All rights reserved.</span>
-  <div class="footer-links">
-    <a href="/pricing">Pricing</
+</body>
+</html>

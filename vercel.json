@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "api/chat.js": {
+      "maxDuration": 30
+    },
+    "api/prices.js": {
+      "maxDuration": 20
+    },
+    "api/paddle-webhook.js": {
+      "maxDuration": 15
+    }
+  },
+  "rewrites": [
+    { "source": "/pricing", "destination": "/pricing/index.html" },
+    { "source": "/terms", "destination": "/terms/index.html" },
+    { "source": "/privacy", "destination": "/privacy/index.html" },
+    { "source": "/refund", "destination": "/refund/index.html" }
+  ]
+}
