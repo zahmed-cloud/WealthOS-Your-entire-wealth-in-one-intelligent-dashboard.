@@ -1542,16 +1542,26 @@ function doLogin() {
         if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
         if (res.error) {
           if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
-          doLoginLocal(email, pw, err, suc);
+          // Show the actual Supabase error — do NOT fall back to local
+          var msg = res.error.message || 'Login failed.';
+          if (msg.toLowerCase().indexOf('invalid') >= 0 || msg.toLowerCase().indexOf('credentials') >= 0) {
+            showErr(err, 'Invalid email or password. Please try again.');
+          } else if (msg.toLowerCase().indexOf('email not confirmed') >= 0) {
+            showErr(err, 'Please confirm your email first. Check your inbox.');
+          } else {
+            showErr(err, msg);
+          }
           return;
         }
         // Supabase success
         var sbUser = res.data.user;
         var localUser = users.find(function(u) { return u.email === email || u.supabaseId === sbUser.id; });
         if (!localUser) {
+          var meta = sbUser.user_metadata || {};
           localUser = {
             id: 'u_' + Date.now(),
-            firstName: email.split('@')[0], lastName: '',
+            firstName: meta.first_name || email.split('@')[0],
+            lastName: meta.last_name || '',
             email: email, plan: 'free',
             supabaseId: sbUser.id, createdAt: new Date().toISOString()
           };
@@ -1578,10 +1588,16 @@ function doLogin() {
         if (suc) { suc.textContent = 'Welcome back, ' + (localUser.firstName || 'User') + '!'; suc.style.display = 'block'; }
         setTimeout(function() { enterDashboard(); }, 600);
       })
-      .catch(function() {
+      .catch(function(e) {
         if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = 'Log In'; }
-        // Network error -- try local
-        doLoginLocal(email, pw, err, suc);
+        // Network error — try local as offline fallback
+        console.warn('[WealthOS] Supabase login network error, trying local:', e);
+        var localUser = users.find(function(x) { return x.email === email; });
+        if (localUser) {
+          doLoginLocal(email, pw, err, suc);
+        } else {
+          showErr(err, 'Unable to connect. Please check your internet and try again.');
+        }
       });
   } else {
     // Supabase not available -- local only
