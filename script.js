@@ -950,9 +950,9 @@ function buildPortfolioContext() {
   lines.push("=== END OF PORTFOLIO DATA ===");
   return lines.join("\n");
 }
-function appendChatMsg(role,text){
+function appendChatMsg(role,text,stream){
   var C=document.getElementById("chat-messages");
-  if(!C)return;
+  if(!C)return null;
   var ai=role==="ai";
 
   function md(t){
@@ -976,13 +976,53 @@ function appendChatMsg(role,text){
   var bb=document.createElement("div");
   bb.style.cssText="padding:12px 15px;font-size:13px;line-height:1.65;max-width:calc(100% - 48px);min-width:0;word-break:break-word;overflow-wrap:anywhere;box-sizing:border-box;"+(ai?"background:rgba(255,255,255,0.07);color:#F2F2FA;border:1px solid rgba(255,255,255,0.09);border-radius:4px 14px 14px 14px;":"background:#5C5FEF;color:#fff;border-radius:14px 4px 14px 14px;");
 
-  bb.innerHTML=ai?md(text):text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+  if (!stream) {
+    bb.innerHTML=ai?md(text):text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+  }
 
   row.appendChild(av);
   row.appendChild(bb);
   C.appendChild(row);
   setTimeout(function(){C.scrollTop=C.scrollHeight;},60);
   if(role==="user"){var s=document.getElementById("chat-suggestions");if(s)s.style.display="none";}
+
+  // Stream mode: return bubble + md function for progressive rendering
+  if (stream && ai) {
+    return { bubble: bb, md: md, container: C };
+  }
+  return null;
+}
+
+// Streaming word-by-word effect for AI responses
+function streamChatMsg(text, callback) {
+  var ref = appendChatMsg("ai", "", true);
+  if (!ref) { appendChatMsg("ai", text); if (callback) callback(); return; }
+
+  var words = text.split(/(\s+)/); // split preserving whitespace
+  var idx = 0;
+  var built = '';
+  var speed = 18; // ms per word — fast but visible
+  var chunkSize = 2; // words per tick for natural feel
+
+  function tick() {
+    if (idx >= words.length) {
+      ref.bubble.innerHTML = ref.md(text); // final render with full markdown
+      setTimeout(function(){ ref.container.scrollTop = ref.container.scrollHeight; }, 30);
+      if (callback) callback();
+      return;
+    }
+    // Add a chunk of words
+    var end = Math.min(idx + chunkSize, words.length);
+    for (var i = idx; i < end; i++) { built += words[i]; }
+    idx = end;
+    // Render progressively (plain text during streaming, markdown at end)
+    ref.bubble.textContent = built;
+    ref.container.scrollTop = ref.container.scrollHeight;
+    // Vary speed slightly for natural feel
+    var nextSpeed = speed + Math.floor(Math.random() * 12);
+    setTimeout(tick, nextSpeed);
+  }
+  tick();
 }
 
 function showFollowUpSuggestions(userQ, aiReply) {
@@ -1232,9 +1272,10 @@ function sendChat(overrideText) {
     removeTyping();
     var reply = (data && data.reply) ? data.reply : "I could not generate a response. Please try again.";
     chatHistory.push({ role:"ai", content: reply });
-    appendChatMsg("ai", reply);
-    if (sendBtn) sendBtn.disabled = false;
-    if (chatHistory.length >= 4) showFollowUpSuggestions(text, reply);
+    streamChatMsg(reply, function() {
+      if (sendBtn) sendBtn.disabled = false;
+      if (chatHistory.length >= 4) showFollowUpSuggestions(text, reply);
+    });
   })
   .catch(function(err) {
     removeTyping();
@@ -1583,7 +1624,7 @@ function doLogin() {
           saveSession(localUser);
           // Sync plan from public.users table (may differ from metadata)
           setTimeout(syncPlanFromDB, 500);
-          // Ensure profile row exists in public.users (fire-and-forget)
+          // Ensure profile row exists in public.users (update names if missing)
           try {
             if (localUser.supabaseId && _sb) {
               _sb.from('users').upsert({
@@ -1591,7 +1632,9 @@ function doLogin() {
                 email: email,
                 first_name: localUser.firstName || email.split('@')[0],
                 last_name: localUser.lastName || ''
-              }, { onConflict: 'id', ignoreDuplicates: true }).catch(function(){});
+              }, { onConflict: 'id' }).then(function(r) {
+                if (r.error) console.warn('[WealthOS] Login profile upsert error:', r.error.message);
+              }).catch(function(e) { console.warn('[WealthOS] Login profile upsert failed:', e); });
             }
           } catch(ue) { console.warn('[WealthOS] Profile upsert skipped:', ue); }
           if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = origText; }

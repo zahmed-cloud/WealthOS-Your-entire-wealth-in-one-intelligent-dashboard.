@@ -90,7 +90,34 @@ async function updateUserPlan(email, supabaseId, plan) {
       return false;
     }
 
-    console.log(`Plan updated: ${email} → ${plan}`);
+    console.log(`Plan updated (metadata): ${email} → ${plan}`);
+
+    // Also update public.users.plan table (frontend reads from here via syncPlanFromDB)
+    try {
+      // Use POST with upsert to create row if it doesn't exist
+      const dbRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/users`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${serviceKey}`,
+            'apikey': serviceKey,
+            'Prefer': 'resolution=merge-duplicates,return=minimal',
+          },
+          body: JSON.stringify({ id: user.id, email: email, plan: plan }),
+        }
+      );
+      if (dbRes.ok) {
+        console.log(`Plan updated (public.users): ${email} → ${plan}`);
+      } else {
+        const errText = await dbRes.text();
+        console.warn('public.users upsert failed:', dbRes.status, errText);
+      }
+    } catch (dbErr) {
+      console.warn('public.users upsert error:', dbErr.message);
+    }
+
     return true;
   } catch (e) {
     console.error('updateUserPlan error:', e);
