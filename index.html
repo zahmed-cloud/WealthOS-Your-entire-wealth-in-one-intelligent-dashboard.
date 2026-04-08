@@ -1155,9 +1155,12 @@ body.light-mode .kbd-box{background:#fff}
     display:flex
   }
   .sidebar::-webkit-scrollbar{display:none}
-  .sb-items-wrap{display:flex;flex-direction:row;padding:4px 8px;gap:2px;min-width:max-content}
+  .sb-items-wrap{display:flex;flex-direction:row;padding:3px 8px;gap:2px;min-width:max-content}
   .sb-section{display:none}
-  .sb-item{flex-direction:column;gap:3px;padding:8px 12px;margin:0;font-size:10px;border-radius:8px;white-space:nowrap;min-width:56px;justify-content:center;align-items:center;text-align:center}
+  .sb-div{display:none}
+  .sb-item{flex-direction:column;gap:2px;padding:6px 10px;margin:0;font-size:10px;border-radius:8px;white-space:nowrap;min-width:52px;justify-content:center;align-items:center;text-align:center}
+  .sb-item > span[title]{display:none!important}
+  #coming-soon-items{display:none}
   .sb-badge{display:none}
 
   /* Main */
@@ -1227,7 +1230,7 @@ body.light-mode .kbd-box{background:#fff}
   .plan-card{padding:20px 16px}
 
   /* Sidebar */
-  .sb-item{padding:7px 10px;font-size:9px;min-width:48px}
+  .sb-item{padding:5px 8px;font-size:9px;min-width:44px}
   .sb-icon{width:18px;height:18px}
 
   /* Main */
@@ -1312,7 +1315,7 @@ body.light-mode .kbd-box{background:#fff}
 /* ── Touch device: disable hover states, ensure tap targets ── */
 @media(hover:none) and (pointer:coarse){
   .card:hover,.intel-card:hover,.empty-cta:hover,.btn-primary-lg:hover,.feat-card:hover,.mc:hover{transform:none;box-shadow:none}
-  .sb-item{min-height:44px;justify-content:center}
+  .sb-item{min-height:auto;justify-content:center}
   .btn,.btn-p,.btn-g{min-height:44px}
   .modal-x{width:36px;height:36px;font-size:18px}
 }
@@ -1684,7 +1687,7 @@ body.light-mode .kbd-box{background:#fff}
         <ul class="price-features">
           <li>Everything in Pro</li>
           <li>Portfolio stress testing</li>
-          <li>Multi-user access</li>
+          <li>Multi-user access <span style="font-size:9px;color:var(--blue);font-family:var(--mono);font-weight:600;letter-spacing:0.05em;background:rgba(92,95,239,0.1);padding:1px 6px;border-radius:3px;margin-left:4px">SOON</span></li>
           <li>Advisor sharing portal</li>
           <li>PDF report export</li>
           <li>Priority support</li>

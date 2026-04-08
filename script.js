@@ -1280,8 +1280,8 @@ function goPricing() {
 var PADDLE_CONFIG = {
   proPriceId:          'pri_01kmjb2sm39eqqybcdzqbt45rh',
   privatePriceId:      'pri_01kmjb5rsd19dqga99vcxmegda',
-  proAnnualPriceId:    '',  // Add Paddle annual price ID when created
-  privateAnnualPriceId:'',  // Add Paddle annual price ID when created
+  proAnnualPriceId:    'pri_01knn1mzbhedaw0bth7ttptp3a',
+  privateAnnualPriceId:'pri_01knn1srzjvet3ybx202qpbt64',
   environment:         'production'
 };
 
@@ -1559,41 +1559,50 @@ function doLogin() {
           return;
         }
         // Supabase success — user is authenticated in the cloud
-        var sbUser = res.data.user;
-        var localUser = users.find(function(u) { return u.email === email || u.supabaseId === sbUser.id; });
-        if (!localUser) {
-          // New device — create local user from cloud data
-          var meta = sbUser.user_metadata || {};
-          localUser = {
-            id: 'u_' + Date.now(),
-            firstName: meta.first_name || email.split('@')[0],
-            lastName: meta.last_name || '',
-            email: email, plan: 'free',
-            supabaseId: sbUser.id, createdAt: new Date().toISOString()
-          };
-          users.push(localUser); saveUsers();
+        try {
+          var sbUser = res.data.user;
+          var localUser = users.find(function(u) { return u.email === email || u.supabaseId === sbUser.id; });
+          if (!localUser) {
+            // New device — create local user from cloud data
+            var meta = sbUser.user_metadata || {};
+            localUser = {
+              id: 'u_' + Date.now(),
+              firstName: meta.first_name || email.split('@')[0],
+              lastName: meta.last_name || '',
+              email: email, plan: 'free',
+              supabaseId: sbUser.id, createdAt: new Date().toISOString()
+            };
+            users.push(localUser); saveUsers();
+          }
+          if (!localUser.supabaseId) { localUser.supabaseId = sbUser.id; saveUsers(); }
+          // Read plan from Supabase metadata (trusted source)
+          if (sbUser.user_metadata && sbUser.user_metadata.plan) {
+            localUser.plan = sbUser.user_metadata.plan;
+            saveUsers();
+          }
+          saveSession(localUser);
+          // Sync plan from public.users table (may differ from metadata)
+          setTimeout(syncPlanFromDB, 500);
+          // Ensure profile row exists in public.users (fire-and-forget)
+          try {
+            if (localUser.supabaseId && _sb) {
+              _sb.from('users').upsert({
+                id: localUser.supabaseId,
+                email: email,
+                first_name: localUser.firstName || email.split('@')[0],
+                last_name: localUser.lastName || ''
+              }, { onConflict: 'id', ignoreDuplicates: true }).catch(function(){});
+            }
+          } catch(ue) { console.warn('[WealthOS] Profile upsert skipped:', ue); }
+          if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = origText; }
+          if (suc) { suc.textContent = 'Welcome back, ' + (localUser.firstName || 'User') + '!'; suc.style.display = 'block'; }
+          setTimeout(function() { enterDashboard(); }, 600);
+        } catch(innerErr) {
+          // Auth succeeded but post-login setup had an issue — go to dashboard anyway
+          console.warn('[WealthOS] Post-login setup error (session valid):', innerErr);
+          if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = origText; }
+          setTimeout(function() { enterDashboard(); }, 300);
         }
-        if (!localUser.supabaseId) { localUser.supabaseId = sbUser.id; saveUsers(); }
-        // Read plan from Supabase metadata (trusted source)
-        if (sbUser.user_metadata && sbUser.user_metadata.plan) {
-          localUser.plan = sbUser.user_metadata.plan;
-          saveUsers();
-        }
-        saveSession(localUser);
-        // Sync plan from public.users table (may differ from metadata)
-        setTimeout(syncPlanFromDB, 500);
-        // Ensure profile row exists in public.users (won't overwrite existing plan)
-        if (localUser.supabaseId && _sb) {
-          _sb.from('users').upsert({
-            id: localUser.supabaseId,
-            email: email,
-            first_name: localUser.firstName || email.split('@')[0],
-            last_name: localUser.lastName || ''
-          }, { onConflict: 'id', ignoreDuplicates: true }).catch(function(){});
-        }
-        if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = origText; }
-        if (suc) { suc.textContent = 'Welcome back, ' + (localUser.firstName || 'User') + '!'; suc.style.display = 'block'; }
-        setTimeout(function() { enterDashboard(); }, 600);
       })
       .catch(function(e) {
         if (loginBtn) { loginBtn.disabled = false; loginBtn.textContent = origText; }
@@ -3398,6 +3407,19 @@ function rAlerts(cls, tv) {
   var el = safeGet('wi-alerts');
   var countEl = safeGet('wi-alert-count');
   if (!el) return;
+
+  var plan = settings.plan || (currentUser ? currentUser.plan : 'free') || 'free';
+  var isPro = (plan === 'pro' || plan === 'private');
+
+  if (!isPro) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;cursor:pointer" onclick="showUpgradeRisk()">' +
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 8px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
+      '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px">Pro Feature</div>' +
+      '<div style="font-size:11px;color:var(--muted)">Upgrade to Pro for automated risk alerts</div></div>';
+    if (countEl) countEl.textContent = '';
+    return;
+  }
+
   if (!tv || assets.length === 0) {
     el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:12px;padding:16px">Add assets to see risk analysis.</div>';
     if (countEl) countEl.textContent = '0';
@@ -3532,6 +3554,20 @@ function runPanicMode() {
 // -- 6: 3-Scenario Projection --
 function rProjection(tv) {
   if (!tv || tv <= 0) return;
+
+  var plan = settings.plan || (currentUser ? currentUser.plan : 'free') || 'free';
+  var isPro = (plan === 'pro' || plan === 'private');
+
+  if (!isPro) {
+    var scenEl = safeGet('proj-scenarios');
+    if (scenEl) {
+      scenEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;cursor:pointer" onclick="showUpgradePrompt(\'Wealth Projection\',\'Upgrade to Pro to see 3-scenario 10-year projections of your net worth.\')">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 8px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
+        '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px">Pro Feature</div>' +
+        '<div style="font-size:11px;color:var(--muted)">Upgrade to Pro for wealth projections</div></div>';
+    }
+    return;
+  }
 
   var cls = clsT();
   var rates = {stock:0.10, real_estate:0.07, crypto:0.20, art:0.08, watch:0.06, cash:0.04, other:0.06};
@@ -3824,6 +3860,20 @@ function rTimeline() {
 // ==============================================
 function rReport() {
   try {
+  var plan = settings.plan || (currentUser ? currentUser.plan : 'free') || 'free';
+  var isPro = (plan === 'pro' || plan === 'private');
+  if (!isPro) {
+    var reportView = document.getElementById('v-report');
+    if (reportView) {
+      reportView.innerHTML = '<div style="text-align:center;padding:80px 24px">' +
+        '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto 14px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' +
+        '<div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px">Quarterly Wealth Reports</div>' +
+        '<div style="font-size:13px;color:var(--muted);margin-bottom:20px;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.7">Detailed portfolio reports with allocation breakdown, performance summary, asset tables, and printable PDF export. Available on Pro and Private plans.</div>' +
+        '<button onclick="showUpgradePrompt(\'Quarterly Reports\',\'Upgrade to Pro for quarterly wealth reports with PDF export.\')" style="background:var(--blue);border:none;border-radius:9px;padding:12px 28px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--sans)">Upgrade to Pro \u2192</button>' +
+      '</div>';
+    }
+    return;
+  }
   var tv = totalV(), tc = totalCo(), gain = tv - tc, pct = gainPct(tc, tv);
   var cls = clsT();
   safeSet('report-nw', fmtS(tv));
@@ -4216,6 +4266,12 @@ document.querySelectorAll('.modal-overlay').forEach(function(o) {
 // MISC
 // ==============================================
 function exportData() {
+  var plan = settings.plan || (currentUser ? currentUser.plan : 'free') || 'free';
+  var isPro = (plan === 'pro' || plan === 'private');
+  if (!isPro) {
+    showUpgradePrompt('JSON Data Export', 'Export your complete portfolio data as a JSON file. Available on Pro and Private plans.');
+    return;
+  }
   var portfolio = calcPortfolio();
   var history   = getNWHistory();
   var now       = new Date();
