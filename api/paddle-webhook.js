@@ -39,9 +39,57 @@ async function updateUserPlan(email, supabaseId, plan) {
   }
 
   try {
-    // Find user by email using admin API
-    const listRes = await fetch(
-      `${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=50`,
+    let userId = supabaseId;
+
+    // Step 1: Find user ID — try public.users by email first (no pagination limit)
+    if (!userId && email) {
+      const lookupRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(email)}&select=id&limit=1`,
+        {
+          headers: {
+            'Authorization': `Bearer ${serviceKey}`,
+            'apikey': serviceKey,
+          },
+        }
+      );
+      if (lookupRes.ok) {
+        const rows = await lookupRes.json();
+        if (rows && rows.length > 0) {
+          userId = rows[0].id;
+          console.log(`Found user in public.users: ${email} → ${userId}`);
+        }
+      }
+    }
+
+    // Step 2: If not in public.users, search auth.users (paginate up to 500)
+    if (!userId) {
+      for (let page = 1; page <= 10; page++) {
+        const listRes = await fetch(
+          `${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=50`,
+          {
+            headers: {
+              'Authorization': `Bearer ${serviceKey}`,
+              'apikey': serviceKey,
+            },
+          }
+        );
+        if (!listRes.ok) break;
+        const listData = await listRes.json();
+        const users = listData.users || listData || [];
+        if (users.length === 0) break;
+        const found = users.find(u => u.email === email);
+        if (found) { userId = found.id; break; }
+      }
+    }
+
+    if (!userId) {
+      console.error('User not found anywhere:', email);
+      return false;
+    }
+
+    // Step 3: Get current user metadata (needed to preserve existing fields)
+    const getRes = await fetch(
+      `${SUPABASE_URL}/auth/v1/admin/users/${userId}`,
       {
         headers: {
           'Authorization': `Bearer ${serviceKey}`,
@@ -49,24 +97,16 @@ async function updateUserPlan(email, supabaseId, plan) {
         },
       }
     );
-
-    if (!listRes.ok) {
-      console.error('Failed to list users:', listRes.status);
-      return false;
+    
+    let existingMeta = {};
+    if (getRes.ok) {
+      const userData = await getRes.json();
+      existingMeta = userData.user_metadata || {};
     }
 
-    const listData = await listRes.json();
-    const users = listData.users || listData || [];
-    const user = users.find(u => u.email === email || u.id === supabaseId);
-
-    if (!user) {
-      console.error('User not found:', email, supabaseId);
-      return false;
-    }
-
-    // Update user metadata with new plan
+    // Step 4: Update auth.users metadata with new plan
     const updateRes = await fetch(
-      `${SUPABASE_URL}/auth/v1/admin/users/${user.id}`,
+      `${SUPABASE_URL}/auth/v1/admin/users/${userId}`,
       {
         method: 'PUT',
         headers: {
@@ -76,7 +116,7 @@ async function updateUserPlan(email, supabaseId, plan) {
         },
         body: JSON.stringify({
           user_metadata: {
-            ...user.user_metadata,
+            ...existingMeta,
             plan: plan,
             plan_updated_at: new Date().toISOString(),
           },
