@@ -1078,25 +1078,47 @@ function showFollowUpSuggestions(userQ, aiReply) {
 function showTyping() {
   var container = document.getElementById("chat-messages");
   if (!container) return;
+  var phrases = [
+    'Analyzing your portfolio\u2026',
+    'Reviewing your holdings\u2026',
+    'Checking your allocations\u2026',
+    'Running the numbers\u2026',
+    'Preparing your insights\u2026'
+  ];
   var div = document.createElement("div");
   div.className = "chat-msg ai";
   div.id = "chat-typing";
+  var phrase = phrases[Math.floor(Math.random() * phrases.length)];
   div.innerHTML =
-    "<div class=\"chat-avatar\">W</div>" +
-    "<div class=\"chat-bubble\" style=\"padding:12px 16px\">" +
-      "<div class=\"chat-typing-wrap\">" +
-        "<div class=\"chat-typing-dot\"></div>" +
-        "<div class=\"chat-typing-dot\"></div>" +
-        "<div class=\"chat-typing-dot\"></div>" +
+    "<div style='display:flex;gap:10px;align-items:flex-start;width:100%'>" +
+      "<div style='width:28px;height:28px;min-width:28px;border-radius:50%;background:rgba(92,95,239,0.15);color:#9B9FEF;border:1px solid rgba(92,95,239,0.3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-top:2px'>W</div>" +
+      "<div style='padding:10px 15px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.09);border-radius:4px 14px 14px 14px;font-size:12px;color:#9B9FEF;font-family:var(--mono);letter-spacing:0.02em'>" +
+        "<span id='typing-text' style='display:inline-flex;align-items:center;gap:6px'>" +
+          "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='animation:spin 1.5s linear infinite'><path d='M21 12a9 9 0 11-6.219-8.56'/></svg>" +
+          phrase +
+        "</span>" +
       "</div>" +
     "</div>";
   container.appendChild(div);
   setTimeout(function(){ container.scrollTop = container.scrollHeight; }, 30);
+
+  // Cycle through phrases while waiting
+  var idx = phrases.indexOf(phrase);
+  div._interval = setInterval(function() {
+    idx = (idx + 1) % phrases.length;
+    var el = document.getElementById('typing-text');
+    if (el) {
+      el.innerHTML = "<svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='animation:spin 1.5s linear infinite'><path d='M21 12a9 9 0 11-6.219-8.56'/></svg>" + phrases[idx];
+    }
+  }, 2500);
 }
 
 function removeTyping() {
   var t = document.getElementById('chat-typing');
-  if (t) t.remove();
+  if (t) {
+    if (t._interval) clearInterval(t._interval);
+    t.remove();
+  }
 }
 
 function askChat(text) { sendChat(text); }
@@ -1272,10 +1294,9 @@ function sendChat(overrideText) {
     removeTyping();
     var reply = (data && data.reply) ? data.reply : "I could not generate a response. Please try again.";
     chatHistory.push({ role:"ai", content: reply });
-    streamChatMsg(reply, function() {
-      if (sendBtn) sendBtn.disabled = false;
-      if (chatHistory.length >= 4) showFollowUpSuggestions(text, reply);
-    });
+    appendChatMsg("ai", reply);
+    if (sendBtn) sendBtn.disabled = false;
+    if (chatHistory.length >= 4) showFollowUpSuggestions(text, reply);
   })
   .catch(function(err) {
     removeTyping();
